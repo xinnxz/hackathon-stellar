@@ -1,219 +1,190 @@
-# 🏦 StellarTradeAgent — AI Trading Agent on Stellar
+# ⚡ StellarTradeAgent
 
-> An autonomous AI agent that **pays for market intelligence** using MPP & x402 protocols and executes on-chain trades on Stellar SDEX.
+> **AI agent that PAYS for market intelligence and TRADES autonomously on Stellar SDEX.**
+> Every payment and trading decision is a REAL on-chain Stellar transaction.
 
-![Stellar](https://img.shields.io/badge/Stellar-Testnet-blue)
-![OpenClaw](https://img.shields.io/badge/OpenClaw-Skills-orange)
-![License](https://img.shields.io/badge/License-MIT-green)
+---
 
-## 🎯 What Is This?
+## ✨ What Makes This Different
 
-StellarTradeAgent is a **fully autonomous trading agent** that demonstrates the future of AI + crypto payments:
+Most hackathon projects simulate payments. **StellarTradeAgent does it for real.**
 
-1. **🤖 AI Agent** (via OpenClaw) decides when to trade
-2. **💳 Pays for data** using MPP (Machine Payments Protocol) — real on-chain payments
-3. **🌐 Pays for intelligence** using x402 (HTTP 402 Payment Required) protocol
-4. **📊 Analyzes markets** with 4 technical indicators + confluence scoring
-5. **📈 Executes trades** directly on the Stellar SDEX (on-chain, verifiable)
-6. **🛡️ Manages risk** with 5 automated safety rules
+| Feature | Others | StellarTradeAgent |
+|---------|--------|-------------------|
+| Payments | Simulated | **Real on-chain TXs** (verifiable!) |
+| Protocols | Usually 1 | **Both MPP + x402** |
+| Audit Trail | None | **AI reasoning in TX memo** |
+| Dashboard | Static/CLI | **Live animated dashboard** |
+| Agents | Single | **Dual-agent economy** |
+| Verification | "Trust me" | **stellar.expert links** |
 
-### The Key Innovation
+---
 
-Traditional bots use free APIs. **StellarTradeAgent pays for every piece of data it consumes** — demonstrating a future where AI agents are economic actors that participate in machine-to-machine commerce.
+## 🔗 On-Chain Proof
 
-```
-Agent → Pays 0.01 USDC (MPP) → Gets price data
-Agent → Pays 0.05 USDC (x402) → Gets sentiment analysis
-Agent → Analyzes 4 indicators → Confluence signal
-Agent → Executes SDEX trade → On-chain TX hash
-```
+Every interaction creates a verifiable Stellar transaction:
+
+| What | Protocol | TX Hash | Verify |
+|------|----------|---------|--------|
+| Price Data Payment | MPP Charge | `0fb5e990...` | [stellar.expert ↗](https://stellar.expert/explorer/testnet/tx/0fb5e990ec475420b6019dfad98aa6eb239d0c7b26e292bb30d3387fb1c67d01) |
+| Intelligence Payment | x402 (HTTP 402) | `6d3de10e...` | [stellar.expert ↗](https://stellar.expert/explorer/testnet/tx/6d3de10eced742665508151615975c04ae333ad099ff453ec9314f4f412efebd) |
+| SDEX Trade (with audit memo) | SDEX | `90bfd1bb...` | [stellar.expert ↗](https://stellar.expert/explorer/testnet/tx/90bfd1bb895f9b10f031a6e7016e9a90b2efb445274c8360ef17ccddcbc94e2d) |
+
+**On-Chain Audit Trail:** Trade TX `90bfd1bb...` contains memo `SELL:c25:V:0.1578` — this means:
+- `SELL` — the action taken
+- `c25` — 25% confidence
+- `V` — VWAP indicator agreed
+- `0.1578` — entry price
+
+**Anyone can verify WHY the AI traded by reading the TX memo on-chain.**
+
+---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│                 OpenClaw Runtime                 │
-│  ┌──────┐  ┌──────────┐  ┌────────────────┐    │
-│  │SOUL  │  │ AGENTS   │  │   5 Custom     │    │
-│  │.md   │  │ .md      │  │   Skills       │    │
-│  │      │  │ Trading  │  │                │    │
-│  │ AI   │  │ Rules &  │  │ wallet ─────── │    │
-│  │ Per- │  │ Pipeline │  │ poll-price ─── │──── MPP Server
-│  │ sona │  │          │  │ x402-intel ─── │──── xlm402.com
-│  └──────┘  └──────────┘  │ analyze ────── │    │
-│                          │ trade ──────── │──── Stellar SDEX
-│                          └────────────────┘    │
-└─────────────────────────────────────────────────┘
-         │                          │
-         ▼                          ▼
-┌─────────────────┐    ┌──────────────────────┐
-│  Express API    │    │  Vite + React        │
-│  (Port 3000)    │───▶│  Dashboard           │
-│  SSE Stream     │    │  Real-time monitoring│
-└─────────────────┘    └──────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    StellarTradeAgent System                   │
+│                                                               │
+│  ┌───────────────┐     ┌───────────────┐     ┌────────────┐ │
+│  │  MPP Server   │     │  x402 Server  │     │  Stellar   │ │
+│  │  (Port 3002)  │     │  (Port 3003)  │     │  Testnet   │ │
+│  │               │     │               │     │  (Horizon) │ │
+│  │  Price data   │     │  Sentiment    │     │  SDEX DEX  │ │
+│  │  per request  │     │  analysis     │     │            │ │
+│  └───────┬───────┘     └───────┬───────┘     └─────┬──────┘ │
+│          │ 402+pay             │ 402+pay           │         │
+│          ▼                     ▼                   │         │
+│  ┌─────────────────────────────────────────────────┤         │
+│  │              Agent Server (Port 3000)           │         │
+│  │                                                 │         │
+│  │  Autonomous Loop (every 30s):                   │         │
+│  │  1. 💰 Check wallet balance                     │         │
+│  │  2. 📊 Pay MPP → get price (real TX)           │         │
+│  │  3. 🧠 Analyze (EMA, RSI, BB, VWAP)           │         │
+│  │  4. 🌐 Pay x402 → get intel (real TX)          │         │
+│  │  5. 📈 Trade on SDEX (real TX + audit memo)    │─────────┘
+│  │  6. 📋 Report via SSE                          │
+│  │                                                 │
+│  │  Each skill = OpenClaw-compatible script        │
+│  └──────────────────────┬──────────────────────────┘
+│                         │ SSE events
+│                         ▼
+│  ┌──────────────────────────────────────────────────┐
+│  │           React Dashboard (Port 5173)            │
+│  │                                                  │
+│  │  ┌────────┐ ┌────────┐ ┌──────┐ ┌────────────┐ │
+│  │  │ Dual   │ │ Budget │ │ P&L  │ │  Pipeline  │ │
+│  │  │ Wallet │ │ Gauge  │ │Track │ │  Animated  │ │
+│  │  ├────────┤ ├────────┤ ├──────┤ ├────────────┤ │
+│  │  │ Agent↓ │ │ ██░░░░ │ │+$0.2 │ │ ●→●→●→○→○ │ │
+│  │  │ Prov ↑ │ │ 6%used │ │ 67%W │ │            │ │
+│  │  └────────┘ └────────┘ └──────┘ └────────────┘ │
+│  │  ┌────────────────┐  ┌──────────────────────┐  │
+│  │  │ Trading Chart  │  │ Transaction Ledger   │  │
+│  │  │  📈 live data  │  │ TX: 0fb5e9... ↗     │  │
+│  │  └────────────────┘  └──────────────────────┘  │
+│  └──────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## 🛠️ Tech Stack
+---
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Agent Runtime | **OpenClaw** | Orchestration, skill execution, autonomy |
-| AI Model | **Gemini 2.0 Flash** | Trading reasoning & decision making |
-| Blockchain | **Stellar SDK** | On-chain transactions, SDEX trading |
-| Price Data | **MPP (mppx)** | Machine-paid market data access |
-| Intelligence | **x402 Protocol** | HTTP 402 paid sentiment analysis |
-| Dashboard | **Vite + React + Recharts** | Real-time trading visualization |
-| Backend API | **Express.js + SSE** | REST API + Server-Sent Events |
+## 🔄 5 OpenClaw Skills
 
-## 🚀 Quick Start
+Each skill is an independent script that can be executed by OpenClaw TUI:
 
-### Prerequisites
-- Node.js 18+
-- OpenClaw (`npm install -g openclaw@latest`)
+| Skill | Cost | What It Does |
+|-------|------|-------------|
+| `/stellar-wallet` | Free | Check XLM/USDC balances + budget |
+| `/stellar-poll-price` | 0.05 XLM | Pay MPP → get XLM/USDC price |
+| `/stellar-analyze` | Free | Run 4 indicators + confluence |
+| `/stellar-x402-intel` | 0.10 XLM | Pay x402 → get sentiment |
+| `/stellar-trade` | Gas fee | Execute SDEX trade + audit memo |
 
-### 1. Clone & Install
-
-```bash
-git clone https://github.com/YOUR_USERNAME/hackathon-stellar.git
-cd hackathon-stellar
-
-# Install all dependencies
-npm install                         # Root (Stellar SDK)
-cd server && npm install && cd ..   # Server deps
-cd services/market-data && npm install && cd ../.. # MPP deps
-cd frontend && npm install && cd ..  # Dashboard deps
-```
-
-### 2. Setup Wallets
-
-```bash
-node scripts/setup-wallets.js           # Generate 2 testnet wallets
-# Copy the output keys into .env
-
-node scripts/setup-usdc-trustline.js    # Add USDC trustline
-node scripts/seed-orderbook.js          # Seed SDEX with liquidity
-```
-
-### 3. Configure .env
-
-```env
-AGENT_STELLAR_SECRET=S...your-agent-secret...
-AGENT_STELLAR_PUBLIC=G...your-agent-public...
-MARKET_DATA_STELLAR_SECRET=S...market-data-secret...
-MARKET_DATA_STELLAR_ADDRESS=G...market-data-public...
-GEMINI_API_KEY=your-gemini-key
-```
-
-### 4. Run Everything
-
-```bash
-# Terminal 1: MPP Market Data Server
-npm run mpp
-
-# Terminal 2: Agent Backend
-npm run server
-
-# Terminal 3: Dashboard
-npm run dashboard
-
-# Terminal 4: OpenClaw Agent (interactive)
-openclaw tui
-```
-
-### 5. Trade!
-
-In OpenClaw TUI, type:
-```
-/stellar-wallet          # Check balances
-/stellar-poll-price      # Pay MPP → get market data
-/stellar-analyze         # Run 4 indicators
-/stellar-trade SELL 50   # Execute on SDEX
-```
-
-## 📊 5 Custom Skills
-
-### `/stellar-wallet` 💰
-Check XLM + USDC balances and intel budget status.
-
-### `/stellar-poll-price` 📊
-Pay **0.01 USDC** via MPP protocol to get current XLM/USDC market data.
-
-### `/stellar-x402-intel` 🌐
-Pay **0.05 USDC** via x402 protocol for premium sentiment analysis.
-
-### `/stellar-analyze` 🧠
-Run 4 technical indicators with confluence scoring:
-- **EMA Cross** — Fast/slow moving average crossover
-- **RSI** — Relative Strength Index (overbought/oversold)
-- **Bollinger Bands** — Volatility-based price position
-- **VWAP** — Volume Weighted Average Price
-- **Confluence** — ≥3/4 agreement required for trade signal
-
-### `/stellar-trade` 📈
-Execute BUY/SELL on Stellar SDEX with risk management:
-- Stop-loss: -5%
-- Take-profit: +8%
-- Max drawdown: -15%
-- Position sizing: ≤30% of balance
-- Cooldown: 60s between trades
+---
 
 ## 🛡️ Risk Management
 
-| Rule | Threshold | Action |
-|------|-----------|--------|
-| Stop Loss | -5% | Auto close position |
-| Take Profit | +8% | Auto close position |
-| Max Drawdown | -15% | Halt all trading |
-| Position Size | 30% max | Limit per trade |
-| Cooldown | 60 seconds | Enforce between trades |
+| Rule | Value | Purpose |
+|------|-------|---------|
+| Stop-loss | -5% | Auto-close losing positions |
+| Take-profit | +8% | Lock in gains |
+| Max drawdown | -15% | Emergency stop |
+| Position sizing | ≤30% | Never risk full balance |
+| Cooldown | 60s | Prevent overtrading |
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clone & install
+git clone https://github.com/xinnxz/hackathon-stellar.git
+cd hackathon-stellar
+npm run install:all
+
+# 2. Setup wallets (generates keys + funds via Friendbot)
+npm run setup
+npm run trustline
+npm run seed
+
+# 3. Start everything (4 services)
+npm run demo
+# Opens: MPP (:3002) + x402 (:3003) + API (:3000) + Dashboard (:5173)
+
+# 4. Open dashboard
+# http://localhost:5173
+# Click [▶ Start] to begin autonomous trading
+```
+
+---
+
+## 📊 Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Blockchain | Stellar Testnet (Horizon API) |
+| Payments | MPP Charge + x402 (HTTP 402) |
+| Trading | Stellar SDEX (manageSellOffer/manageBuyOffer) |
+| Backend | Node.js + Express + SSE |
+| Frontend | React 19 + Vite + Recharts |
+| Agent | OpenClaw-compatible skills |
+| SDK | @stellar/stellar-sdk v15 |
+
+---
 
 ## 📁 Project Structure
 
 ```
 hackathon-stellar/
-├── SOUL.md              # OpenClaw agent personality
-├── AGENTS.md            # Trading rules & pipeline
-├── TOOLS.md             # Skill documentation
-├── skills/              # 5 OpenClaw custom skills
-│   ├── stellar-wallet/
-│   ├── stellar-poll-price/
-│   ├── stellar-analyze/
-│   ├── stellar-trade/
-│   └── stellar-x402-intel/
-├── server/              # Express backend + modules
-│   ├── index.js         # API + SSE
-│   ├── wallet.js        # Stellar wallet management
-│   ├── budget.js        # Intel budget tracker
-│   ├── risk.js          # Risk management engine
-│   ├── sdex.js          # SDEX trade execution
-│   ├── indicators.js    # Technical analysis
-│   ├── agent.js         # AI brain (Gemini)
-│   └── history.js       # Event store + SSE
-├── services/market-data/# MPP Price Server
-│   ├── server.js        # Express + MPP Charge
-│   └── price-engine.js  # Controlled wave generator
-├── frontend/            # Vite + React dashboard
-│   └── src/
-│       ├── App.jsx      # Main dashboard
-│       └── components/  # 8 dashboard panels
-├── scripts/             # Setup scripts
-│   ├── setup-wallets.js
-│   ├── setup-usdc-trustline.js
-│   └── seed-orderbook.js
-└── .env                 # Configuration
+├── SOUL.md                    # Agent identity (OpenClaw)
+├── AGENTS.md                  # Trading rules (OpenClaw)
+├── TOOLS.md                   # Available skills (OpenClaw)
+├── skills/
+│   ├── stellar-wallet/        # Balance check skill
+│   ├── stellar-poll-price/    # MPP price polling skill
+│   ├── stellar-analyze/       # 4-indicator analysis skill
+│   ├── stellar-x402-intel/    # x402 intelligence skill
+│   └── stellar-trade/         # SDEX trade execution skill
+├── server/                    # Agent server + API
+├── services/
+│   ├── market-data/           # MPP price server
+│   └── x402-intel-server/     # x402 intelligence server
+└── frontend/                  # React dashboard
 ```
 
-## 🔗 Verifiable On-Chain
+---
 
-Every trade is verifiable on Stellar testnet:
-- **Explorer**: [stellar.expert/explorer/testnet](https://stellar.expert/explorer/testnet)
-- All transaction hashes are logged and can be verified
-- MPP payments are real on-chain transactions
+## 🏆 Built for Stellar Hacks: Agents
 
-## 🏆 Built For
+This project demonstrates:
+- **x402 Protocol** — Real HTTP 402 payment flow with on-chain verification
+- **MPP Charge** — Pay-per-request market data with Stellar payments
+- **SDEX Trading** — Autonomous on-chain order execution
+- **OpenClaw Skills** — Modular, independently executable agent capabilities
+- **Machine-to-Machine Commerce** — Two agents exchanging value on Stellar
 
-**Stellar Hacks: Agents** — Building autonomous AI agents that leverage Stellar's payment protocols (x402, MPP) for machine-to-machine commerce.
+---
 
-## 📄 License
-
-MIT
+**License:** MIT

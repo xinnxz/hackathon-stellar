@@ -2,28 +2,16 @@
  * index.js — Agent Server
  * =======================
  * Express server utama yang meng-host:
- * 1. Agent Brain (agentic trading loop)
+ * 1. Agent Brain (agentic trading loop via skills)
  * 2. REST API (untuk dashboard)
  * 3. SSE stream (real-time updates)
  * 
  * PORT: 3000
- * 
- * ENDPOINTS:
- * POST /api/chat        → User command → agent response
- * POST /api/start       → Start autonomous trading
- * POST /api/stop        → Stop trading
- * GET  /api/events      → SSE stream
- * GET  /api/status      → Agent state
- * GET  /api/history     → All events
  */
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { Keypair } from '@stellar/stellar-sdk';
-import { Wallet } from './wallet.js';
-import { Budget } from './budget.js';
-import { RiskManager } from './risk.js';
-import { SDEXTrader } from './sdex.js';
+import { Keypair, Horizon } from '@stellar/stellar-sdk';
 import { History } from './history.js';
 import { Agent } from './agent.js';
 
@@ -32,8 +20,9 @@ import { Agent } from './agent.js';
 // ═══════════════════════════════════
 const PORT = process.env.SERVER_PORT || 3000;
 const AGENT_SECRET = process.env.AGENT_STELLAR_SECRET;
+const AGENT_PUBLIC = process.env.AGENT_STELLAR_PUBLIC;
+const PROVIDER_PUBLIC = process.env.MARKET_DATA_STELLAR_ADDRESS;
 const HORIZON_URL = process.env.HORIZON_URL || 'https://horizon-testnet.stellar.org';
-const BUDGET_LIMIT = parseFloat(process.env.AGENT_BUDGET_USDC || '1.00');
 const MPP_URL = process.env.MPP_SERVER_URL || 'http://localhost:3002';
 
 // ═══════════════════════════════════
@@ -41,29 +30,20 @@ const MPP_URL = process.env.MPP_SERVER_URL || 'http://localhost:3002';
 // ═══════════════════════════════════
 let agent;
 const history = new History();
+let agentPublicKey = '';
 
 if (AGENT_SECRET && AGENT_SECRET !== 'S...') {
   const keypair = Keypair.fromSecret(AGENT_SECRET);
-  const wallet = new Wallet(AGENT_SECRET, HORIZON_URL);
-  const budget = new Budget(BUDGET_LIMIT);
-  const risk = new RiskManager();
-  const sdex = new SDEXTrader(keypair, HORIZON_URL);
+  agentPublicKey = keypair.publicKey();
 
   agent = new Agent({
-    wallet,
-    budget,
-    risk,
-    sdex,
     history,
-    config: {
-      mppServerUrl: MPP_URL
-    }
+    config: { mppServerUrl: MPP_URL }
   });
 
-  console.log(`🔑 Agent wallet: ${keypair.publicKey()}`);
+  console.log(`🔑 Agent wallet: ${agentPublicKey}`);
 } else {
   console.log('⚠️  No AGENT_STELLAR_SECRET set — running in demo mode');
-  console.log('   Run: node scripts/setup-wallets.js to generate keys');
 }
 
 // ═══════════════════════════════════
@@ -161,11 +141,8 @@ app.post('/api/chat', async (req, res) => {
   }
   
   if (msg === 'balance' || msg.includes('wallet')) {
-    if (agent) {
-      const balances = await agent.wallet.getBalances();
-      history.addEvent('CHAT', { role: 'agent', content: `💰 Balance: ${balances.xlm.toFixed(2)} XLM | ${balances.usdc.toFixed(2)} USDC` });
-      return res.json({ response: balances });
-    }
+    history.addEvent('CHAT', { role: 'agent', content: '💰 Use dashboard or /stellar-wallet for balance info.' });
+    return res.json({ response: 'Check dashboard for wallet balance.' });
   }
 
   // Default response
@@ -187,20 +164,57 @@ app.get('/api/events', (req, res) => {
  * GET /api/status — Current agent state
  */
 app.get('/api/status', async (req, res) => {
-  if (!agent) {
-    return res.json({ isRunning: false, error: 'No wallet configured' });
-  }
-
-  const status = agent.getStatus();
+  const status = agent ? agent.getStatus() : { isRunning: false };
   
+  // Fetch balance from Horizon directly
   try {
-    const balances = await agent.wallet.getBalances();
-    status.balances = balances;
+    if (agentPublicKey) {
+      const server = new Horizon.Server(HORIZON_URL);
+      const account = await server.loadAccount(agentPublicKey);
+      const xlmBal = account.balances.find(b => b.asset_type === 'native');
+      const usdcBal = account.balances.find(b => b.asset_code === 'USDC');
+      status.balances = {
+        xlm: parseFloat(xlmBal?.balance || 0),
+        usdc: parseFloat(usdcBal?.balance || 0),
+        publicKey: agentPublicKey
+      };
+    }
   } catch (e) {
-    status.balances = { error: e.message };
+    status.balances = { xlm: 0, usdc: 0, publicKey: agentPublicKey, error: e.message };
   }
 
   res.json(status);
+});
+
+/**
+ * GET /api/dual-status — Both Agent + Provider wallet balances
+ * 
+ * PENJELASAN:
+ * Menunjukkan machine-to-machine commerce:
+ * Agent wallet: balance turun (bayar data)
+ * Provider wallet: balance naik (terima pembayaran)
+ */
+app.get('/api/dual-status', async (req, res) => {
+  const result = { agent: null, provider: null };
+  const server = new Horizon.Server(HORIZON_URL);
+
+  try {
+    if (agentPublicKey) {
+      const acc = await server.loadAccount(agentPublicKey);
+      const xlm = acc.balances.find(b => b.asset_type === 'native');
+      result.agent = { xlm: parseFloat(xlm?.balance || 0), publicKey: agentPublicKey };
+    }
+  } catch (e) { result.agent = { error: e.message }; }
+
+  try {
+    if (PROVIDER_PUBLIC) {
+      const acc = await server.loadAccount(PROVIDER_PUBLIC);
+      const xlm = acc.balances.find(b => b.asset_type === 'native');
+      result.provider = { xlm: parseFloat(xlm?.balance || 0), publicKey: PROVIDER_PUBLIC };
+    }
+  } catch (e) { result.provider = { error: e.message }; }
+
+  res.json(result);
 });
 
 /**
@@ -302,7 +316,7 @@ app.listen(PORT, () => {
   console.log(`   Port:       ${PORT}`);
   console.log(`   MPP Server: ${MPP_URL}`);
   console.log(`   Horizon:    ${HORIZON_URL}`);
-  console.log(`   Budget:     ${BUDGET_LIMIT} USDC`);
+  console.log(`   Budget:     ${process.env.AGENT_BUDGET_USDC || '1.00'} USDC`);
   console.log(`   Agent:      ${agent ? '✅ Ready' : '⚠️ No wallet'}`);
   console.log('════════════════════════════════════════');
   console.log('   API:    http://localhost:' + PORT);

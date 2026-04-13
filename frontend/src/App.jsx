@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './index.css'
 import ChatPanel from './components/ChatPanel'
 import IndicatorPanel from './components/IndicatorPanel'
@@ -16,7 +16,7 @@ function App() {
   const [isRunning, setIsRunning] = useState(false)
   const [messages, setMessages] = useState([])
   const [balances, setBalances] = useState({ xlm: 0, usdc: 0, publicKey: '' })
-  const [budget, setBudget] = useState({ total: 1, spent: 0, remaining: 1, percentUsed: 0 })
+  const [budget, setBudget] = useState({ total: 1, spent: 0, remaining: 1, percentUsed: 0, payments: [] })
   const [indicators, setIndicators] = useState(null)
   const [confluence, setConfluence] = useState(null)
   const [pipeline, setPipeline] = useState({})
@@ -25,67 +25,122 @@ function App() {
   const [pnl, setPnl] = useState({ totalPnL: 0, totalTrades: 0, winRate: 0, winningTrades: 0, losingTrades: 0 })
   const [priceHistory, setPriceHistory] = useState([])
   const [connected, setConnected] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState(null)
 
-  // ═══ SSE CONNECTION ═══
+  // ═══ POLLING: Skills Status (budget, prices, trades) — every 3s ═══
   useEffect(() => {
-    const evtSource = new EventSource(`${API_URL}/api/events`)
-
-    evtSource.onopen = () => setConnected(true)
-    evtSource.onerror = () => setConnected(false)
-
-    evtSource.onmessage = (e) => {
+    const poll = async () => {
       try {
-        const event = JSON.parse(e.data)
-        handleEvent(event)
-      } catch (err) {
-        // Ignore parse errors (like ping)
+        const res = await fetch(`${API_URL}/api/skills-status`)
+        if (!res.ok) return
+        const data = await res.json()
+
+        // Budget
+        if (data.budget) {
+          setBudget(data.budget)
+          // Extract payments from budget for PaymentTracker
+          if (data.budget.payments?.length) {
+            setPayments(data.budget.payments.map(p => ({
+              type: p.type,
+              amount: p.amount,
+              detail: p.txHash
+                ? `${p.method || p.type} → TX: ${p.txHash.substring(0, 8)}...`
+                : (p.service || p.type),
+              txHash: p.txHash,
+              explorerUrl: p.explorerUrl,
+              timestamp: p.timestamp
+            })))
+          }
+        }
+
+        // Price history
+        if (data.prices?.length) {
+          setPriceHistory(data.prices.map(p => ({
+            price: p.price,
+            time: new Date(p.timestamp).toLocaleTimeString(),
+            paid: p.paid,
+            txHash: p.txHash
+          })))
+        }
+
+        // Trade state
+        if (data.trades) {
+          const ts = data.trades
+          setPnl({
+            totalPnL: ts.totalPnL || 0,
+            totalTrades: ts.trades?.length || 0,
+            winRate: ts.trades?.length > 0
+              ? Math.round(((ts.winningTrades || 0) / ts.trades.length) * 100)
+              : 0,
+            winningTrades: ts.winningTrades || 0,
+            losingTrades: ts.losingTrades || 0
+          })
+          if (ts.trades?.length) setTrades(ts.trades)
+        }
+
+        setLastUpdate(new Date().toLocaleTimeString())
+      } catch (e) {
+        // Server not running — silent fail
       }
     }
 
-    return () => evtSource.close()
+    const interval = setInterval(poll, 3000)
+    poll()
+    return () => clearInterval(interval)
   }, [])
 
-  // ═══ EVENT HANDLER ═══
+  // ═══ POLLING: Agent Status + Wallet — every 5s ═══
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/status`)
+        if (!res.ok) return
+        const data = await res.json()
+
+        if (data.balances) {
+          setBalances({
+            xlm: data.balances.xlm || 0,
+            usdc: data.balances.usdc || 0,
+            publicKey: data.balances.publicKey || data.publicKey || ''
+          })
+        }
+        setIsRunning(data.isRunning || false)
+        setConnected(true)
+      } catch (e) {
+        setConnected(false)
+      }
+    }
+
+    const interval = setInterval(poll, 5000)
+    poll()
+    return () => clearInterval(interval)
+  }, [])
+
+  // ═══ SSE CONNECTION (real-time events) ═══
+  useEffect(() => {
+    let evtSource
+    try {
+      evtSource = new EventSource(`${API_URL}/api/events`)
+      evtSource.onopen = () => setConnected(true)
+      evtSource.onerror = () => { /* will reconnect automatically */ }
+      evtSource.onmessage = (e) => {
+        try {
+          const event = JSON.parse(e.data)
+          handleEvent(event)
+        } catch (err) { /* ignore parse errors */ }
+      }
+    } catch (e) { /* SSE not available */ }
+
+    return () => evtSource?.close()
+  }, [])
+
+  // ═══ EVENT HANDLER (SSE) ═══
   const handleEvent = useCallback((event) => {
     switch (event.type) {
-      case 'CONNECTED':
-        setConnected(true)
-        break
-
       case 'CHAT':
         setMessages(prev => [...prev.slice(-50), {
           role: event.data.role,
           content: event.data.content,
-          timestamp: event.timestamp
-        }])
-        break
-
-      case 'STATUS':
-        if (event.data.balances) setBalances(event.data.balances)
-        if (event.data.budget) setBudget(event.data.budget)
-        if (event.data.risk) setPnl(event.data.risk)
-        break
-
-      case 'PRICE_POLL':
-        setPayments(prev => [...prev.slice(-30), {
-          type: 'MPP',
-          amount: event.data.cost,
-          detail: `$${event.data.price?.toFixed(4)} (${event.data.change > 0 ? '+' : ''}${event.data.change}%)`,
-          timestamp: event.timestamp
-        }])
-        if (event.data.price) {
-          setPriceHistory(prev => [...prev.slice(-30), { 
-            price: event.data.price, 
-            time: new Date(event.timestamp).toLocaleTimeString() 
-          }])
-        }
-        break
-
-      case 'X402_INTEL':
-        setPayments(prev => [...prev.slice(-30), {
-          type: 'x402',
-          amount: event.data.cost,
-          detail: event.data.service,
           timestamp: event.timestamp
         }])
         break
@@ -95,26 +150,6 @@ function App() {
         if (event.data.confluence) setConfluence(event.data.confluence)
         break
 
-      case 'TRADE':
-        setTrades(prev => [...prev.slice(-20), {
-          action: event.data.action,
-          amount: event.data.amount,
-          price: event.data.price,
-          pnl: event.data.pnl,
-          pnlPercent: event.data.pnlPercent,
-          txHash: event.data.txHash,
-          timestamp: event.timestamp
-        }])
-        setPayments(prev => [...prev.slice(-30), {
-          type: event.data.action === 'BUY' ? 'SDEX' : 'SELL',
-          amount: event.data.amount,
-          detail: `${event.data.action} ${event.data.amount} XLM @ $${event.data.price?.toFixed(4)}`,
-          pnl: event.data.pnl,
-          txHash: event.data.txHash,
-          timestamp: event.timestamp
-        }])
-        break
-
       case 'PIPELINE':
         setPipeline(prev => ({
           ...prev,
@@ -122,11 +157,29 @@ function App() {
         }))
         break
 
+      case 'TRADE':
+        setTrades(prev => [...prev.slice(-20), {
+          action: event.data.action,
+          amount: event.data.amount,
+          price: event.data.price,
+          pnl: event.data.pnl,
+          txHash: event.data.txHash,
+          timestamp: event.timestamp
+        }])
+        break
+
       case 'RISK':
-        // Show risk alerts in chat
         setMessages(prev => [...prev.slice(-50), {
           role: 'agent',
           content: `🛡️ Risk: ${event.data.reason}`,
+          timestamp: event.timestamp
+        }])
+        break
+
+      case 'OPENCLAW_SKILL':
+        setMessages(prev => [...prev.slice(-50), {
+          role: 'agent',
+          content: `⚡ Skill: ${event.data.skill} executed`,
           timestamp: event.timestamp
         }])
         break
@@ -138,31 +191,25 @@ function App() {
     try {
       await fetch(`${API_URL}/api/start`, { method: 'POST' })
       setIsRunning(true)
-    } catch (err) {
-      console.error('Failed to start:', err)
-    }
+    } catch (err) { console.error('Failed:', err) }
   }
 
   const stopTrading = async () => {
     try {
       await fetch(`${API_URL}/api/stop`, { method: 'POST' })
       setIsRunning(false)
-    } catch (err) {
-      console.error('Failed to stop:', err)
-    }
+    } catch (err) { console.error('Failed:', err) }
   }
 
   const sendChat = async (message) => {
+    setMessages(prev => [...prev, { role: 'user', content: message, timestamp: new Date().toISOString() }])
     try {
-      setMessages(prev => [...prev, { role: 'user', content: message, timestamp: new Date().toISOString() }])
       await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message })
       })
-    } catch (err) {
-      console.error('Chat error:', err)
-    }
+    } catch (err) { console.error('Chat error:', err) }
   }
 
   // ═══ RENDER ═══
@@ -176,12 +223,17 @@ function App() {
             {isRunning ? '● LIVE' : '○ IDLE'}
           </span>
           <span className={`header-badge ${connected ? 'live' : 'idle'}`}>
-            {connected ? 'SSE ✓' : 'SSE ✗'}
+            {connected ? '● Connected' : '○ Offline'}
           </span>
+          {lastUpdate && (
+            <span className="header-badge" style={{opacity: 0.5, fontSize: '0.7rem'}}>
+              Updated: {lastUpdate}
+            </span>
+          )}
         </div>
         <div className="header-right">
           <span className="header-wallet">
-            {balances.publicKey ? `${balances.publicKey.substring(0, 4)}...${balances.publicKey.slice(-4)}` : 'No wallet'}
+            {balances.publicKey ? `${balances.publicKey.substring(0, 6)}...${balances.publicKey.slice(-4)}` : 'No wallet'}
           </span>
           {!isRunning ? (
             <button className="btn btn-start" onClick={startTrading}>▶ Start</button>
@@ -201,12 +253,15 @@ function App() {
           {/* Row 1: Wallet | Budget | P&L */}
           <WalletCard balances={balances} />
           <BudgetGauge budget={budget} />
-          <PnLTracker pnl={pnl} budget={budget} />
+          <PnLTracker pnl={pnl} budget={budget} trades={trades} />
 
-          {/* Row 2: Pipeline (full width) */}
+          {/* Row 2: Pipeline */}
           <div className="card span-full">
             <div className="card-header">
               <span className="card-title">🔄 Decision Pipeline</span>
+              <span style={{fontSize: '0.7rem', opacity: 0.5}}>
+                {priceHistory.length} polls | {trades.length} trades
+              </span>
             </div>
             <PipelineViz pipeline={pipeline} />
           </div>

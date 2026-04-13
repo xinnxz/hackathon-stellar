@@ -6,12 +6,15 @@
   "type": "module",
   "scripts": {
     "setup": "node scripts/setup-wallets.js",
+    "trustline": "node scripts/setup-usdc-trustline.js",
     "seed": "node scripts/seed-orderbook.js",
     "server": "node server/index.js",
     "mpp": "node services/market-data/server.js",
-    "frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run mpp\" \"npm run server\" \"npm run frontend\"",
-    "install:all": "npm install && cd server && npm install && cd ../services/market-data && npm install && cd ../../frontend && npm install"
+    "x402": "node services/x402-intel-server/server.js",
+    "dashboard": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run mpp\" \"npm run x402\" \"npm run server\" \"npm run dashboard\"",
+    "demo": "concurrently --names MPP,X402,API,UI \"npm run mpp\" \"npm run x402\" \"npm run server\" \"npm run dashboard\"",
+    "install:all": "npm install && cd server && npm install && cd ../services/market-data && npm install && cd ../x402-intel-server && npm install && cd ../../frontend && npm install"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

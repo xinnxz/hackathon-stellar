@@ -16,7 +16,7 @@
 import { loadEnv } from '../env-loader.js';
 loadEnv();
 import {
-  Keypair, Asset, Networks, TransactionBuilder, Operation, Horizon
+  Keypair, Asset, Networks, TransactionBuilder, Operation, Horizon, Memo
 } from '@stellar/stellar-sdk';
 import fs from 'fs';
 import path from 'path';
@@ -28,6 +28,7 @@ const HORIZON_URL = process.env.HORIZON_URL || 'https://horizon-testnet.stellar.
 const USDC_ISSUER = process.env.USDC_ISSUER || 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
 const TRADE_STATE_FILE = path.resolve(__dirname, '../../server/trade-state.json');
 const PRICE_HISTORY_FILE = path.resolve(__dirname, '../../server/price-history.json');
+const ANALYSIS_STATE_FILE = path.resolve(__dirname, '../../server/analysis-state.json');
 
 function loadTradeState() {
   try {
@@ -57,6 +58,38 @@ function getCurrentPrice() {
   } catch (e) {
     return 0.15;
   }
+}
+
+/**
+ * buildAuditMemo — On-Chain Audit Trail
+ * ======================================
+ * PENJELASAN:
+ * Encode agent reasoning ke Stellar TX memo (max 28 chars).
+ * Juri bisa verify di stellar.expert KENAPA agent trade.
+ * 
+ * Format: <ACTION>:c<CONF>:<INDICATORS>:<PRICE>
+ * Contoh: BUY:c85:ERBV:0.162
+ *   BUY = action
+ *   c85 = confidence 85%
+ *   E=EMA,R=RSI,B=BB,V=VWAP (yang agree)
+ *   0.162 = entry price
+ */
+function buildAuditMemo(action, price) {
+  try {
+    if (fs.existsSync(ANALYSIS_STATE_FILE)) {
+      const analysis = JSON.parse(fs.readFileSync(ANALYSIS_STATE_FILE, 'utf-8'));
+      const conf = Math.round((analysis.confluence?.confidence || 0) * 100);
+      const ind = analysis.indicators || {};
+      const agreeing = [];
+      if (ind.ema?.signal === action) agreeing.push('E');
+      if (ind.rsi?.signal === action) agreeing.push('R');
+      if (ind.bb?.signal === action) agreeing.push('B');
+      if (ind.vwap?.signal === action) agreeing.push('V');
+      // Max 28 chars: BUY:c100:ERBV:0.123456
+      return `${action}:c${conf}:${agreeing.join('')}:${price.toFixed(4)}`.substring(0, 28);
+    }
+  } catch (e) { /* fallback */ }
+  return `${action}:${price.toFixed(4)}`;
 }
 
 async function main() {
@@ -134,11 +167,16 @@ async function main() {
       });
     }
 
+    // Build audit memo for on-chain reasoning trail
+    const auditMemo = buildAuditMemo(action, currentPrice);
+    console.error(`📝 [Audit] Memo: "${auditMemo}"`);
+
     const tx = new TransactionBuilder(account, {
       fee: '100000',
       networkPassphrase: Networks.TESTNET
     })
       .addOperation(operation)
+      .addMemo(Memo.text(auditMemo))  // ON-CHAIN REASONING!
       .setTimeout(30)
       .build();
 

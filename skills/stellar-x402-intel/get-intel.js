@@ -1,33 +1,40 @@
 /**
- * get-intel.js
- * =============
- * OpenClaw Skill Script: Bayar x402 → Dapatkan Market Intelligence
+ * get-intel.js — REAL x402 Payment Client
+ * =========================================
+ * OpenClaw Skill: Bayar XLM on-chain → Dapatkan Market Intelligence
  * 
- * PENJELASAN:
- * Script ini menggunakan x402 protocol (HTTP 402 Payment Required)
- * untuk membayar sebuah layanan market intelligence.
+ * PENJELASAN x402 FLOW:
+ * 1. Client request GET /intel → server return HTTP 402
+ * 2. 402 response berisi payment challenge:
+ *    - destination: wallet address server
+ *    - amount: 0.1 XLM
+ *    - memo: unique challenge ID
+ * 3. Client buat REAL Stellar payment transaction:
+ *    - Send 0.1 XLM ke destination
+ *    - Attach memo dari challenge
+ *    - Sign dengan agent secret key
+ *    - Submit ke Horizon (Stellar network)
+ * 4. Client kirim ulang GET /intel + header X-Payment-TX: <txHash>
+ * 5. Server verify TX on-chain via Horizon
+ * 6. Server return premium intel data
  * 
- * x402 Flow:
- * 1. Client request → server returns 402 + payment details
- * 2. Client bayar on-chain → send receipt in header
- * 3. Server verifies payment → returns premium data
- * 
- * Untuk demo/testnet, kita simulasi pembayaran dan gunakan 
- * data dari price history + analisis sederhana sebagai "intelligence".
- * 
- * Di production, ini akan connect ke xlm402.com atau service x402 lainnya.
+ * SETIAP CALL = 1 REAL STELLAR TX (verifiable di stellar.expert!)
  */
 import { loadEnv } from '../env-loader.js';
 loadEnv();
+import {
+  Keypair, Networks, TransactionBuilder, Operation, Memo, Horizon, Asset
+} from '@stellar/stellar-sdk';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BUDGET_FILE = path.resolve(__dirname, '../../server/budget-state.json');
-const PRICE_HISTORY_FILE = path.resolve(__dirname, '../../server/price-history.json');
 const BUDGET_LIMIT = parseFloat(process.env.AGENT_BUDGET_USDC || '1.00');
-const XLM402_URL = process.env.XLM402_URL || 'https://xlm402.com';
+const X402_SERVER = process.env.X402_INTEL_URL || 'http://localhost:3003';
+const AGENT_SECRET = process.env.AGENT_STELLAR_SECRET;
+const HORIZON_URL = process.env.HORIZON_URL || 'https://horizon-testnet.stellar.org';
 
 function loadBudget() {
   try {
@@ -43,57 +50,9 @@ function saveBudget(budget) {
   fs.writeFileSync(BUDGET_FILE, JSON.stringify(budget, null, 2));
 }
 
-function generateIntel(prices) {
-  // Analyze trend from price history
-  if (prices.length < 3) {
-    return {
-      sentiment: 'NEUTRAL',
-      confidence: 0.3,
-      analysis: 'Insufficient data for trend analysis. Need more price polls.',
-      recommendation: 'Gather more data before trading.'
-    };
-  }
-
-  const recent = prices.slice(-5);
-  const earlier = prices.slice(-10, -5);
-  
-  const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
-  const earlierAvg = earlier.length > 0 
-    ? earlier.reduce((a, b) => a + b, 0) / earlier.length 
-    : recentAvg;
-  
-  const trendPct = ((recentAvg - earlierAvg) / earlierAvg) * 100;
-  
-  // Volatility
-  const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
-  const variance = prices.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / prices.length;
-  const volatility = (Math.sqrt(variance) / mean) * 100;
-  
-  let sentiment, confidence, analysis, recommendation;
-  
-  if (trendPct > 2) {
-    sentiment = 'BULLISH';
-    confidence = Math.min(0.9, 0.5 + trendPct / 10);
-    analysis = `Strong uptrend detected: +${trendPct.toFixed(2)}%. Price momentum is positive with ${volatility.toFixed(1)}% volatility.`;
-    recommendation = 'Consider BUY positions. Trend momentum favors bulls.';
-  } else if (trendPct < -2) {
-    sentiment = 'BEARISH';
-    confidence = Math.min(0.9, 0.5 + Math.abs(trendPct) / 10);
-    analysis = `Downtrend detected: ${trendPct.toFixed(2)}%. Price pressure is negative with ${volatility.toFixed(1)}% volatility.`;
-    recommendation = 'Consider SELL positions or wait for reversal signals.';
-  } else {
-    sentiment = 'NEUTRAL';
-    confidence = 0.4;
-    analysis = `Sideways market: ${trendPct.toFixed(2)}%. Low directional bias with ${volatility.toFixed(1)}% volatility.`;
-    recommendation = 'Wait for clearer signals. Range-bound conditions.';
-  }
-
-  return { sentiment, confidence, analysis, recommendation };
-}
-
 async function main() {
   const budget = loadBudget();
-  const cost = 0.05;
+  const cost = 0.05; // budget tracking cost in USDC equivalent
 
   // Check budget
   if (budget.remaining < cost) {
@@ -104,74 +63,158 @@ async function main() {
     return;
   }
 
-  // Load price history for analysis
-  let prices = [];
-  try {
-    if (fs.existsSync(PRICE_HISTORY_FILE)) {
-      const history = JSON.parse(fs.readFileSync(PRICE_HISTORY_FILE, 'utf-8'));
-      prices = history.map(h => h.price);
-    }
-  } catch (e) { /* */ }
-
-  // Try real x402 service first (if configured)
-  let intel;
-  let paymentMethod = 'x402 (simulated testnet)';
-
-  try {
-    // Attempt x402 call to xlm402.com
-    const res = await fetch(`${XLM402_URL}/api/market-intel`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(5000)
-    });
-    
-    if (res.status === 402) {
-      // Real x402 challenge received — log it
-      paymentMethod = 'x402 (402 challenge received from xlm402.com)';
-      // For testnet, we simulate the payment and use local analysis
-      intel = generateIntel(prices);
-    } else if (res.ok) {
-      const data = await res.json();
-      intel = data;
-      paymentMethod = 'x402 (xlm402.com)';
-    } else {
-      intel = generateIntel(prices);
-    }
-  } catch (e) {
-    // Fallback to local analysis
-    intel = generateIntel(prices);
+  if (!AGENT_SECRET || AGENT_SECRET === 'S...') {
+    console.log(JSON.stringify({ error: 'AGENT_STELLAR_SECRET not set in .env' }));
+    return;
   }
 
-  // Update budget
-  budget.spent = parseFloat((budget.spent + cost).toFixed(4));
-  budget.remaining = parseFloat((budget.total - budget.spent).toFixed(4));
-  budget.percentUsed = parseFloat(((budget.spent / budget.total) * 100).toFixed(1));
-  budget.payments.push({
-    type: 'x402',
-    amount: cost,
-    service: 'market-intel',
-    method: paymentMethod,
-    timestamp: new Date().toISOString()
-  });
-  saveBudget(budget);
+  try {
+    // ═══ STEP 1: Request intel → get 402 challenge ═══
+    console.error('🔒 [x402] Requesting intel...');
+    const challengeRes = await fetch(`${X402_SERVER}/intel`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(10000)
+    });
 
-  console.log(JSON.stringify({
-    success: true,
-    payment: {
-      protocol: 'x402',
-      amount: cost,
-      asset: 'USDC',
-      status: 'settled',
-      method: paymentMethod
-    },
-    intel,
-    dataPoints: prices.length,
-    budget: {
-      spent: budget.spent,
-      remaining: budget.remaining,
-      percentUsed: budget.percentUsed
+    if (challengeRes.status !== 402) {
+      // Server didn't challenge — might be an error or direct response
+      if (challengeRes.ok) {
+        const data = await challengeRes.json();
+        console.log(JSON.stringify({ success: true, protocol: 'x402', note: 'No payment required', ...data }));
+        return;
+      }
+      console.log(JSON.stringify({ error: `Unexpected status: ${challengeRes.status}` }));
+      return;
     }
-  }));
+
+    const challenge = await challengeRes.json();
+    console.error(`💰 [x402] Got 402 challenge: pay ${challenge.payment.amount} ${challenge.payment.asset_code || 'XLM'} to ${challenge.payment.destination}`);
+    console.error(`📝 [x402] Memo: ${challenge.payment.memo}`);
+
+    // ═══ STEP 2: Create & submit Stellar payment ═══
+    const keypair = Keypair.fromSecret(AGENT_SECRET);
+    const server = new Horizon.Server(HORIZON_URL);
+    const account = await server.loadAccount(keypair.publicKey());
+
+    const tx = new TransactionBuilder(account, {
+      fee: '100000',
+      networkPassphrase: Networks.TESTNET
+    })
+      .addOperation(Operation.payment({
+        destination: challenge.payment.destination,
+        asset: Asset.native(),
+        amount: challenge.payment.amount
+      }))
+      .addMemo(Memo.text(challenge.payment.memo))
+      .setTimeout(30)
+      .build();
+
+    tx.sign(keypair);
+
+    console.error('📡 [x402] Submitting payment to Stellar...');
+    const txResult = await server.submitTransaction(tx);
+    const txHash = txResult.hash;
+    console.error(`✅ [x402] Payment TX submitted: ${txHash}`);
+
+    // ═══ STEP 3: Re-request with payment proof ═══
+    console.error('🔓 [x402] Re-requesting with payment proof...');
+    const intelRes = await fetch(`${X402_SERVER}/intel`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'X-Payment-TX': txHash
+      },
+      signal: AbortSignal.timeout(15000)
+    });
+
+    if (!intelRes.ok) {
+      const errData = await intelRes.json().catch(() => ({}));
+      console.log(JSON.stringify({
+        error: `x402 verification failed: ${errData.error || intelRes.status}`,
+        txHash,
+        explorerUrl: `https://stellar.expert/explorer/testnet/tx/${txHash}`
+      }));
+      return;
+    }
+
+    const intelData = await intelRes.json();
+
+    // ═══ STEP 4: Update budget + output ═══
+    budget.spent = parseFloat((budget.spent + cost).toFixed(4));
+    budget.remaining = parseFloat((budget.total - budget.spent).toFixed(4));
+    budget.percentUsed = parseFloat(((budget.spent / budget.total) * 100).toFixed(1));
+    budget.payments.push({
+      type: 'x402',
+      amount: cost,
+      xlmPaid: parseFloat(challenge.payment.amount),
+      service: 'market-intel',
+      method: 'x402 (real on-chain payment)',
+      txHash,
+      explorerUrl: `https://stellar.expert/explorer/testnet/tx/${txHash}`,
+      memo: challenge.payment.memo,
+      timestamp: new Date().toISOString()
+    });
+    saveBudget(budget);
+
+    console.log(JSON.stringify({
+      success: true,
+      payment: {
+        protocol: 'x402',
+        amount: cost,
+        xlmPaid: parseFloat(challenge.payment.amount),
+        asset: 'XLM',
+        txHash,
+        explorerUrl: `https://stellar.expert/explorer/testnet/tx/${txHash}`,
+        status: 'verified_on_chain',
+        memo: challenge.payment.memo
+      },
+      intel: intelData.intel || intelData,
+      dataPoints: intelData.intel?.dataPoints || 0,
+      budget: {
+        spent: budget.spent,
+        remaining: budget.remaining,
+        percentUsed: budget.percentUsed
+      }
+    }));
+
+  } catch (err) {
+    // Fallback: if x402 server is unreachable, use local analysis
+    console.error(`⚠️ [x402] Server error: ${err.message}. Using fallback.`);
+    
+    let prices = [];
+    const priceFile = path.resolve(__dirname, '../../server/price-history.json');
+    try {
+      if (fs.existsSync(priceFile)) {
+        const data = JSON.parse(fs.readFileSync(priceFile, 'utf-8'));
+        prices = data.map(h => h.price);
+      }
+    } catch (e) { /* */ }
+
+    // Simple fallback analysis
+    const sentiment = prices.length > 5
+      ? (prices[prices.length - 1] > prices[prices.length - 5] ? 'BULLISH' : 'BEARISH')
+      : 'NEUTRAL';
+
+    budget.spent = parseFloat((budget.spent + cost).toFixed(4));
+    budget.remaining = parseFloat((budget.total - budget.spent).toFixed(4));
+    budget.percentUsed = parseFloat(((budget.spent / budget.total) * 100).toFixed(1));
+    budget.payments.push({
+      type: 'x402',
+      amount: cost,
+      service: 'market-intel',
+      method: 'x402 (fallback - server unreachable)',
+      timestamp: new Date().toISOString()
+    });
+    saveBudget(budget);
+
+    console.log(JSON.stringify({
+      success: true,
+      payment: { protocol: 'x402', amount: cost, status: 'fallback_local' },
+      intel: { sentiment, confidence: 0.3, analysis: 'Fallback analysis — x402 server unreachable' },
+      budget: { spent: budget.spent, remaining: budget.remaining }
+    }));
+  }
 }
 
 main();

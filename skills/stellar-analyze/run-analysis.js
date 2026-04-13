@@ -174,14 +174,24 @@ function main() {
   // Calculate confluence
   const confluence = calcConfluence(indicators);
 
-  console.log(JSON.stringify({
+  const result = {
     success: true,
     currentPrice: prices[prices.length - 1],
     dataPoints: prices.length,
     indicators,
     confluence,
     timestamp: new Date().toISOString()
-  }));
+  };
+
+  // Save analysis state for on-chain audit trail
+  // execute-trade.js reads this to build Stellar TX memo
+  const ANALYSIS_STATE_FILE = path.resolve(__dirname, '../../server/analysis-state.json');
+  try {
+    fs.mkdirSync(path.dirname(ANALYSIS_STATE_FILE), { recursive: true });
+    fs.writeFileSync(ANALYSIS_STATE_FILE, JSON.stringify(result, null, 2));
+  } catch (e) { /* best effort */ }
+
+  console.log(JSON.stringify(result));
 }
 
 main();

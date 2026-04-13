@@ -84,6 +84,10 @@ html {
 body {
   font-family: var(--font-sans);
   background: var(--bg-primary);
+  background-image:
+    radial-gradient(at 10% 20%, rgba(0, 210, 255, 0.04) 0, transparent 50%),
+    radial-gradient(at 85% 80%, rgba(123, 47, 247, 0.03) 0, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(0, 255, 136, 0.02) 0, transparent 40%);
   color: var(--text-primary);
   line-height: 1.5;
   overflow: hidden;
@@ -252,12 +256,15 @@ body {
    ═══════════════════════════════════ */
 .card {
   background: var(--bg-secondary);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: var(--space-lg);
-  transition: background var(--transition-fast);
+  transition: all var(--transition-normal);
 }
 
 .card:hover {
   background: var(--bg-card-hover);
+  box-shadow: var(--glow-blue);
 }
 
 .card-header {
@@ -290,7 +297,14 @@ body {
 /* Stat Cards (top row) */
 .stat-card {
   background: var(--bg-secondary);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: var(--space-lg);
+  transition: all var(--transition-normal);
+}
+
+.stat-card:hover {
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
 }
 
 .stat-icon {
@@ -799,4 +813,67 @@ body {
   font-weight: 700;
   font-family: var(--font-mono);
   margin-top: 2px;
+}
+
+/* ═══════════════════════════════════
+   PREMIUM ANIMATIONS
+   ═══════════════════════════════════ */
+@keyframes valueFlash {
+  0% { background: transparent; }
+  20% { background: rgba(0, 255, 136, 0.12); }
+  100% { background: transparent; }
+}
+
+@keyframes valueFlashRed {
+  0% { background: transparent; }
+  20% { background: rgba(255, 71, 87, 0.12); }
+  100% { background: transparent; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+.value-flash {
+  animation: valueFlash 0.8s ease;
+  border-radius: var(--radius-sm);
+}
+
+.value-flash-red {
+  animation: valueFlashRed 0.8s ease;
+  border-radius: var(--radius-sm);
+}
+
+/* TX Hash Links */
+.tx-link {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--accent-blue);
+  text-decoration: none;
+  opacity: 0.7;
+  transition: all var(--transition-fast);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.tx-link:hover {
+  opacity: 1;
+  background: rgba(0, 210, 255, 0.1);
+  color: #fff;
+}
+
+/* Live indicator pulse */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
+  50% { opacity: 0.7; box-shadow: 0 0 15px rgba(0, 255, 136, 0.5); }
+}
+
+.header-badge.live {
+  animation: livePulse 2s infinite;
 }

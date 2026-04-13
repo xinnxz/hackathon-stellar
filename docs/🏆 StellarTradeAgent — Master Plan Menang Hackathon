@@ -1,0 +1,245 @@
+# 🏆 StellarTradeAgent — Master Plan Menang Hackathon
+
+## Goal: 6.5/10 → 9.5/10 | Top 3 dari 500 peserta
+
+---
+
+## PHASE 1: Fix Fondasi (KRITIS — tanpa ini = kalah)
+> ⏰ Estimasi: ~2 jam
+
+### 1A. Real x402 Payment Flow
+**Masalah:** x402 skill kita cuma simulated — `generateIntel()` lokal, bukan real payment.
+**Solusi:** Implementasi actual HTTP 402 challenge-response.
+
+**File:** `skills/stellar-x402-intel/get-intel.js`
+**Perubahan:**
+- Client kirim request ke x402-protected endpoint
+- Server respond 402 + payment details (amount, destination, memo)
+- Client buat Stellar payment transaction on-chain
+- Client kirim ulang request + payment proof di header
+- Server verify payment → return data premium
+
+**File Baru:** `services/x402-intel-server/server.js`
+- Express server yang menerapkan real x402 protocol
+- Endpoint `/intel` yang return 402 + payment challenge
+- Verify Stellar TX receipt sebelum return data
+- Return sentiment analysis sebagai paid content
+
+**Impact:** Juri bisa verify ada REAL on-chain payment untuk setiap intel request.
+
+---
+
+### 1B. Real MPP Payment Verification
+**Masalah:** MPP server kita cuma return data tanpa verify pembayaran on-chain.
+**Solusi:** Implement actual MPP Charge flow pakai `mppx` SDK.
+
+**File:** `services/market-data/server.js`
+**Perubahan:**
+- Import `mppx` SDK yang sudah ada di node_modules
+- Wrap `/price` endpoint dengan MPP Charge middleware
+- Client harus kirim Stellar payment dulu, kirim receipt
+- Server verify receipt on-chain → baru return data
+
+**File:** `skills/stellar-poll-price/poll-price.js`
+**Perubahan:**
+- Implement MPP client flow: request → get 402 → pay on-chain → send receipt → get data
+- Setiap poll = 1 real Stellar transaction yang bisa di-verify di explorer
+
+**Impact:** Setiap price poll = real on-chain TX. Juri bisa verify 20+ payment TXs!
+
+---
+
+### 1C. Connect Dashboard ke Backend LIVE
+**Masalah:** Dashboard cantik tapi data-nya dummy/tidak connected.
+**Solusi:** Connect semua komponen ke `/api/skills-status` endpoint.
+
+**File:** `frontend/src/App.jsx`
+**Perubahan:**
+- Poll `/api/skills-status` setiap 3 detik
+- Parse price history → feed ke TradingChart
+- Parse budget state → feed ke BudgetGauge
+- Parse trade state → feed ke PnLTracker
+- Parse indicators → feed ke IndicatorPanel
+- SSE dari `/api/events` → feed ke ChatPanel + PipelineViz
+
+**File:** Setiap komponen di `frontend/src/components/`
+**Perubahan:**
+- WalletCard: consume real `xlm` + `usdc` dari API
+- BudgetGauge: consume real `budget.spent` / `budget.remaining`
+- TradingChart: render real price history array
+- IndicatorPanel: render real EMA/RSI/BB/VWAP values
+- PnLTracker: render real `totalPnL`, `winRate`, `trades[]`
+- PaymentTracker: render real `budget.payments[]`
+- PipelineViz: highlight active step based on last event
+- ChatPanel: show real SSE events from agent
+
+**Impact:** Dashboard menampilkan DATA REAL yang berubah live. Screenshot-worthy.
+
+---
+
+## PHASE 2: Autonomous Agent Loop (DIFFERENTIATOR)
+> ⏰ Estimasi: ~1.5 jam
+
+### 2A. Gemini Integration untuk Agent Brain
+**Masalah:** Agent belum punya AI brain yang running. GEMINI_API_KEY masih placeholder.
+**Solusi:** Wire up Gemini 2.0 Flash sebagai decision-making engine.
+
+**File:** `server/agent.js`
+**Perubahan:**
+- Agent.executeCycle() memanggil skill scripts secara berurutan
+- Gemini menerima output dari setiap skill
+- Gemini membuat keputusan: trade atau tidak
+- Keputusan di-broadcast via SSE ke dashboard
+
+**Flow Autonomous Loop:**
+```
+Loop setiap 30 detik:
+1. exec(`node skills/stellar-wallet/check-wallet.js`) → parse JSON
+2. exec(`node skills/stellar-poll-price/poll-price.js`) → parse JSON  
+3. Kalau data cukup: exec(`node skills/stellar-analyze/run-analysis.js`)
+4. Kalau confluence ≥ 0.75: exec(`node skills/stellar-trade/execute-trade.js BUY 50`)
+5. Broadcast semua event via SSE
+6. Wait 30s → repeat
+```
+
+**Impact:** Dashboard akan "hidup" — data bergerak, harga update, trade terjadi otomatis.
+
+---
+
+### 2B. OpenClaw TUI Integration Proof
+**Masalah:** Belum pernah test OpenClaw TUI menjalankan pipeline lengkap.
+**Solusi:** Set Gemini API key + test full flow.
+
+**Steps:**
+1. User set real `GEMINI_API_KEY` di `.env`
+2. `openclaw tui` — agent start
+3. User ketik "start trading" → agent jalankan pipeline
+4. Screenshot/record hasilnya
+
+**Impact:** Bukti bahwa OpenClaw benar-benar orchestrate agent, bukan hanya label.
+
+---
+
+## PHASE 3: Multi-Agent Ecosystem (JUARA)
+> ⏰ Estimasi: ~1.5 jam
+
+### 3A. Data Provider Agent (Agent #2)
+**Masalah:** Kita cuma punya 1 agent (trader). Top projects punya multi-agent.
+**Solusi:** Buat "Market Data Provider" agent yang MENERIMA pembayaran.
+
+**Konsep:**
+- Agent #1 (Trader): Membayar → menerima data → trade
+- Agent #2 (Provider): Menerima bayaran → serve data
+- Keduanya beroperasi di Stellar testnet
+- Setiap interaksi = real on-chain TX
+
+**File Baru:** `services/x402-intel-server/SKILL.md` + `server.js`
+**Perubahan:**
+- Provider agent punya wallet sendiri (Market Data wallet yang sudah ada)
+- Serve market data via x402 + MPP
+- Log semua payment received
+- Dashboard bisa show KEDUA agent-agent balance berubah
+
+**Impact:** Ini menunjukkan ECOSYSTEM machine-to-machine commerce, bukan cuma 1 bot.
+
+---
+
+### 3B. On-Chain Audit Trail
+**Masalah:** Keputusan agent tidak tercatat on-chain.
+**Solusi:** Setiap trade TX include memo dengan reasoning.
+
+**File:** `skills/stellar-trade/execute-trade.js`
+**Perubahan:**
+- Setiap TX tambahkan Stellar `Memo.text()` 
+- Contoh: `"BUY:conf=0.85:ema=BUY:rsi=BUY:bb=BUY"`
+- Memo ini visible on-chain di stellar.expert
+- Juri bisa verify agent's reasoning langsung di blockchain!
+
+**Impact:** **GAME CHANGER** — transparency yang bisa di-audit. Sangat sedikit project yang punya ini.
+
+---
+
+## PHASE 4: Polish & Presentation (PENYEMPURNA)
+> ⏰ Estimasi: ~1 jam
+
+### 4A. Dashboard Live Animations
+**File:** `frontend/src/index.css`
+- Pulse animation pada angka yang berubah
+- Glow effect saat trade terjadi
+- Particle effect saat payment sukses
+- Smooth transitions pada chart
+
+### 4B. Demo Video (3 menit)
+**Script:**
+```
+0:00 - "StellarTradeAgent — AI agent yang MEMBAYAR untuk data"
+0:15 - Show architecture diagram
+0:30 - Start MPP server + Backend
+0:45 - Open dashboard (live, empty state)
+1:00 - Agent starts autonomous loop
+1:15 - First MPP poll → price appears on chart (💰 0.01 USDC paid)
+1:30 - x402 intel request (💰 0.05 USDC paid)
+1:45 - 4 indicators calculate → confluence signal
+2:00 - TRADE EXECUTED → TX hash appears
+2:15 - Click TX hash → verify on stellar.expert
+2:30 - Show budget depleting, P&L updating
+2:45 - "Every payment is a real on-chain Stellar transaction"
+3:00 - Show total: 20 payments, 3 trades, all verifiable
+```
+
+### 4C. GitHub Repo Polish
+- Clean README with GIF/screenshots
+- Architecture diagram (mermaid)
+- Setup instructions yang bisa di-clone dan jalan dalam 5 menit
+- `.env.example` lengkap
+- `npm run demo` — 1 command untuk start semua
+
+### 4D. Update DoraHacks Submission
+- Upload demo video (YouTube link)
+- Update GitHub link
+- Add screenshots dashboard
+
+---
+
+## 📊 Timeline & Execution Order
+
+| Phase | Task | Waktu | Score Impact |
+|-------|------|-------|-------------|
+| **1A** | Real x402 payment flow | 45 min | +0.5 |
+| **1B** | Real MPP payment verification | 30 min | +0.5 |
+| **1C** | Connect dashboard live | 30 min | +0.5 |
+| **2A** | Autonomous agent loop | 45 min | +0.5 |
+| **2B** | OpenClaw TUI proof | 15 min | +0.3 |
+| **3A** | Multi-agent ecosystem | 45 min | +0.5 |
+| **3B** | On-chain audit trail (memo) | 15 min | +0.5 |
+| **4A** | Dashboard animations | 20 min | +0.2 |
+| **4B** | Demo video | 30 min | +1.0 |
+| **4C** | GitHub polish | 15 min | +0.3 |
+| **4D** | Update DoraHacks | 10 min | +0.2 |
+| | **TOTAL** | **~5.5 jam** | **6.5 → 9.5** |
+
+---
+
+## 🎯 Prioritas Eksekusi
+
+```
+BATCH 1 (WAJIB — Score 6.5 → 8.0):
+├── 1A. Real x402 payment
+├── 1B. Real MPP verification  
+└── 1C. Dashboard connected
+
+BATCH 2 (CRITICAL — Score 8.0 → 9.0):
+├── 2A. Autonomous loop
+├── 3B. On-chain audit trail (memo)
+└── 2B. OpenClaw TUI test
+
+BATCH 3 (WINNING — Score 9.0 → 9.5):
+├── 3A. Multi-agent ecosystem
+├── 4B. Demo video
+├── 4A. Dashboard animations
+└── 4C-D. Polish & update submission
+```
+
+> [!IMPORTANT]
+> Setiap batch bisa di-commit dan pushed ke GitHub secara incremental.
+> DoraHacks submission bisa di-update setelah setiap batch selesai.

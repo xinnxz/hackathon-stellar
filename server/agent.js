@@ -1,316 +1,249 @@
 /**
- * agent.js
- * ========
- * OpenClaw-Inspired Agentic Trading Loop
- * Otak utama dari StellarTradeAgent.
+ * agent.js — Autonomous Skill-Based Trading Loop
+ * =================================================
  * 
  * PENJELASAN ARSITEKTUR:
- * Terinspirasi dari framework OpenClaw (disebut di hackathon resources),
- * agent ini memiliki agentic loop yang berjalan otonom:
+ * Agent ini menjalankan pipeline trading secara OTONOM dengan
+ * memanggil OpenClaw skills sebagai child processes.
  * 
- * 1. RECEIVE  → Terima command dari user atau timer
- * 2. CONTEXT  → Load state: balance, budget, posisi saat ini
- * 3. POLL     → Bayar MPP → ambil harga XLM/USDC
- * 4. INTEL    → Bayar x402 → ambil market data dari xlm402.com
- * 5. ANALYZE  → Jalankan 4 indikator (EMA, RSI, BB, VWAP)
- * 6. DECIDE   → Confluence scoring + risk check
- * 7. EXECUTE  → Submit SDEX order on-chain
- * 8. PERSIST  → Simpan state + log
- * 9. REPORT   → kirim SSE event ke dashboard
- * 10. LOOP    → Tunggu → ulangi
+ * Setiap skill = independent script yang bisa juga dipanggil
+ * langsung oleh OpenClaw TUI. Agent server mengorkestrasi
+ * urutan eksekusi dan broadcast hasilnya via SSE.
  * 
- * FLOW DATA:
- * MPP Server → price data → indicators → confluence → risk → SDEX trade
- * xlm402.com → market intel → enhance analysis
+ * FLOW (setiap 30 detik):
+ * 1. WALLET  → check-wallet.js → saldo + budget
+ * 2. POLL    → poll-price.js → bayar MPP → harga (REAL TX)
+ * 3. ANALYZE → run-analysis.js → 4 indikator + confluence
+ * 4. INTEL   → get-intel.js → bayar x402 → sentiment (REAL TX)
+ * 5. DECIDE  → confluence ≥ 0.75? → BUY/SELL/HOLD
+ * 6. TRADE   → execute-trade.js → SDEX on-chain (REAL TX)
+ * 
+ * Setiap step broadcast SSE event → Dashboard animates live
  */
-import { calculateConfluence } from './indicators.js';
+import { spawn } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = path.resolve(__dirname, '..');
+const SKILLS_DIR = path.resolve(ROOT_DIR, 'skills');
 
 export class Agent {
-  /**
-   * @param {Object} deps - Dependencies injection
-   * @param {Object} deps.wallet - Stellar Wallet instance
-   * @param {Object} deps.budget - Budget tracker instance
-   * @param {Object} deps.risk - Risk manager instance
-   * @param {Object} deps.sdex - SDEX trader instance
-   * @param {Object} deps.history - History/SSE store instance
-   * @param {Object} deps.config - Configuration
-   */
-  constructor(deps) {
-    this.wallet = deps.wallet;
-    this.budget = deps.budget;
-    this.risk = deps.risk;
-    this.sdex = deps.sdex;
-    this.history = deps.history;
-    this.config = deps.config || {};
-    
+  constructor({ history, config }) {
+    this.history = history;
+    this.config = config || {};
     this.isRunning = false;
     this.cycleCount = 0;
     this.intervalId = null;
+    this.lastCycleResult = null;
+    this.isCycleRunning = false; // prevent overlapping cycles
+  }
+
+  /**
+   * execSkill(scriptPath, args)
+   * Execute a skill script as child process and parse JSON stdout.
+   * 
+   * PENJELASAN:
+   * Setiap skill output JSON ke stdout. stderr dipakai untuk logging.
+   * Ini memungkinkan skills dijalankan baik oleh Agent maupun OpenClaw.
+   */
+  execSkill(scriptPath, args = []) {
+    return new Promise((resolve) => {
+      const fullPath = path.resolve(SKILLS_DIR, scriptPath);
+      const proc = spawn('node', [fullPath, ...args], {
+        cwd: ROOT_DIR,
+        env: { ...process.env },
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
+
+      let stdout = '';
+      let stderr = '';
+      proc.stdout.on('data', (d) => stdout += d.toString());
+      proc.stderr.on('data', (d) => {
+        stderr += d.toString();
+        // Log skill stderr in real-time (shows payment progress)
+        const lines = d.toString().trim().split('\n');
+        lines.forEach(line => {
+          if (line.trim()) console.log(`   ${line.trim()}`);
+        });
+      });
+
+      proc.on('close', (code) => {
+        try {
+          const result = JSON.parse(stdout.trim());
+          resolve(result);
+        } catch {
+          resolve({ error: `Skill parse error (code ${code})`, raw: stdout.substring(0, 200) });
+        }
+      });
+
+      proc.on('error', (err) => {
+        resolve({ error: `Skill exec error: ${err.message}` });
+      });
+
+      // Timeout after 30s
+      setTimeout(() => {
+        proc.kill();
+        resolve({ error: 'Skill timeout (30s)' });
+      }, 30000);
+    });
   }
 
   /**
    * runCycle()
-   * Menjalankan 1 cycle lengkap dari trading pipeline.
-   * Ini adalah INTI dari agent — setiap step menghasilkan event untuk dashboard.
+   * Execute one full trading cycle.
    */
   async runCycle() {
+    if (this.isCycleRunning) {
+      console.log('   ⏳ Previous cycle still running, skipping...');
+      return;
+    }
+
+    this.isCycleRunning = true;
     this.cycleCount++;
     const cycleId = this.cycleCount;
     console.log(`\n🔄 ══════ CYCLE ${cycleId} ══════`);
 
     try {
-      // ═══ STEP 1: CHECK CONTEXT ═══
-      this.history.addEvent('PIPELINE', { step: 1, name: 'CONTEXT', status: 'active', cycleId });
-      
-      const balances = await this.wallet.getBalances();
-      const budgetStatus = this.budget.getStatus();
-      
-      this.history.addEvent('STATUS', {
-        balances,
-        budget: budgetStatus,
-        cycle: cycleId
-      });
+      // ═══ STEP 1: WALLET CHECK ═══
+      this.broadcast('PIPELINE', { step: 1, name: 'Wallet Check', status: 'running' });
+      this.broadcast('CHAT', { role: 'agent', content: `🔄 Cycle #${cycleId} starting...` });
 
-      // Check if budget allows intel purchases (need 0.02 for MPP + x402)
-      if (!this.budget.canSpend(0.02)) {
-        this.history.addEvent('PIPELINE', { step: 1, name: 'CONTEXT', status: 'blocked', reason: 'Budget depleted' });
-        this.history.addEvent('CHAT', { role: 'agent', content: `⚠️ Intel budget depleted (${budgetStatus.remaining} USDC remaining). Stopping trading.` });
+      const wallet = await this.execSkill('stellar-wallet/check-wallet.js');
+      
+      if (wallet.success) {
+        this.broadcast('STATUS', { 
+          balances: { xlm: wallet.xlm, usdc: wallet.usdc, publicKey: wallet.publicKey }
+        });
+        console.log(`   💰 Wallet: ${wallet.xlm?.toFixed(2)} XLM`);
+      }
+      this.broadcast('PIPELINE', { step: 1, name: 'Wallet Check', status: 'done' });
+
+      // Check budget
+      if (wallet.budget?.remaining < 0.01) {
+        this.broadcast('CHAT', { role: 'agent', content: '⚠️ Intel budget depleted. Stopping.' });
         this.stop();
+        this.isCycleRunning = false;
         return;
       }
 
-      this.history.addEvent('PIPELINE', { step: 1, name: 'CONTEXT', status: 'done' });
+      // ═══ STEP 2: POLL PRICE (MPP — REAL ON-CHAIN PAYMENT) ═══
+      this.broadcast('PIPELINE', { step: 2, name: 'Poll Price (MPP)', status: 'running' });
 
-      // ═══ STEP 2: POLL PRICE (MPP) ═══
-      this.history.addEvent('PIPELINE', { step: 2, name: 'POLL (MPP)', status: 'active', cycleId });
-      
-      let priceData;
-      try {
-        const mppUrl = this.config.mppServerUrl || 'http://localhost:3002';
-        const response = await fetch(`${mppUrl}/price`, {
-          headers: { 'x-stellar-address': this.wallet.publicKey }
-        });
-        const result = await response.json();
-        priceData = result.data;
-        
-        // Record intel spending
-        this.budget.recordSpending(0.01, 'MPP', 'Price data poll');
-        
-        this.history.addEvent('PRICE_POLL', {
-          protocol: 'MPP Charge',
+      const price = await this.execSkill('stellar-poll-price/poll-price.js');
+
+      if (price.success) {
+        this.broadcast('PRICE_POLL', {
+          price: price.price,
+          change: price.change,
           cost: 0.01,
-          price: priceData.price,
-          change: priceData.change_pct,
-          historyLength: priceData.history.length
+          txHash: price.payment?.txHash
         });
-        
-        console.log(`   📊 Price: $${priceData.price} (${priceData.change_pct > 0 ? '+' : ''}${priceData.change_pct}%)`);
-      } catch (error) {
-        this.history.addEvent('PIPELINE', { step: 2, name: 'POLL (MPP)', status: 'error', error: error.message });
-        console.error('   ❌ MPP poll failed:', error.message);
-        return;
-      }
-      
-      this.history.addEvent('PIPELINE', { step: 2, name: 'POLL (MPP)', status: 'done' });
-
-      // ═══ STEP 3: INTEL (x402 → xlm402.com) ═══
-      this.history.addEvent('PIPELINE', { step: 3, name: 'INTEL (x402)', status: 'active', cycleId });
-      
-      // For hackathon demo: simulate x402 payment to xlm402.com
-      // In production: use @x402/fetch to actually call xlm402.com
-      this.budget.recordSpending(0.01, 'x402', 'Market intel from xlm402.com');
-      
-      this.history.addEvent('X402_INTEL', {
-        protocol: 'x402',
-        service: 'xlm402.com',
-        cost: 0.01,
-        dataReceived: 'Market quote + metadata'
-      });
-      
-      console.log(`   🌐 x402: Paid $0.01 to xlm402.com for market intel`);
-      this.history.addEvent('PIPELINE', { step: 3, name: 'INTEL (x402)', status: 'done' });
-
-      // ═══ STEP 4: ANALYZE (4 Indicators + Confluence) ═══
-      this.history.addEvent('PIPELINE', { step: 4, name: 'ANALYZE', status: 'active', cycleId });
-      
-      const confluence = calculateConfluence(priceData.history, priceData.volume_history);
-      
-      this.history.addEvent('ANALYSIS', {
-        indicators: {
-          ema: { signal: confluence.indicators.ema.signal, reason: confluence.indicators.ema.reason },
-          rsi: { signal: confluence.indicators.rsi.signal, value: confluence.indicators.rsi.value, reason: confluence.indicators.rsi.reason },
-          bb: { signal: confluence.indicators.bb.signal, reason: confluence.indicators.bb.reason },
-          vwap: { signal: confluence.indicators.vwap.signal, reason: confluence.indicators.vwap.reason }
-        },
-        confluence: {
-          signal: confluence.signal,
-          confidence: confluence.confidence,
-          votes: confluence.votes,
-          suggestedSize: confluence.suggestedSize,
-          reason: confluence.reason
-        }
-      });
-      
-      console.log(`   🧠 Confluence: ${confluence.signal} (${confluence.votes.buy}B/${confluence.votes.sell}S/${confluence.votes.hold}H) → ${confluence.reason}`);
-      this.history.addEvent('PIPELINE', { step: 4, name: 'ANALYZE', status: 'done' });
-
-      // ═══ STEP 5: DECIDE (Risk Check) ═══
-      this.history.addEvent('PIPELINE', { step: 5, name: 'DECIDE', status: 'active', cycleId });
-      
-      // Portfolio value for risk check
-      const portfolioValue = balances.xlm * priceData.price + balances.usdc;
-      const riskCheck = this.risk.checkRisk(priceData.price, portfolioValue);
-      
-      // Handle forced actions (stop-loss, take-profit)
-      if (riskCheck.shouldClose && this.risk.currentPosition) {
-        console.log(`   🛡️ Risk: ${riskCheck.action} — ${riskCheck.reason}`);
-        
-        // Force close position
-        const closeResult = await this.sdex.sell(
-          this.risk.currentPosition.amount,
-          priceData.price.toFixed(7)
-        );
-        
-        if (closeResult.success) {
-          const closedTrade = this.risk.closePosition(priceData.price);
-          this.history.addEvent('TRADE', {
-            action: 'SELL (RISK)',
-            amount: closedTrade.amount,
-            price: priceData.price,
-            pnl: closedTrade.pnl,
-            reason: riskCheck.reason,
-            txHash: closeResult.hash
-          });
-        }
-        
-        this.history.addEvent('PIPELINE', { step: 5, name: 'DECIDE', status: 'done' });
-        this.history.addEvent('PIPELINE', { step: 6, name: 'REPORT', status: 'done' });
-        return;
-      }
-
-      // Check if we can trade
-      if (!riskCheck.canTrade) {
-        console.log(`   🛡️ Risk blocked: ${riskCheck.reason}`);
-        this.history.addEvent('RISK', { action: riskCheck.action, reason: riskCheck.reason });
-        this.history.addEvent('PIPELINE', { step: 5, name: 'DECIDE', status: 'blocked', reason: riskCheck.reason });
-        return;
-      }
-
-      this.history.addEvent('PIPELINE', { step: 5, name: 'DECIDE', status: 'done' });
-
-      // ═══ STEP 6: EXECUTE (SDEX Trade) ═══
-      if (confluence.signal === 'HOLD') {
-        this.history.addEvent('PIPELINE', { step: 6, name: 'EXECUTE', status: 'skip', reason: 'No confluence → HOLD' });
-        this.history.addEvent('CHAT', { 
-          role: 'agent', 
-          content: `📊 Cycle ${cycleId}: HOLD — ${confluence.reason}. EMA:${confluence.indicators.ema.signal} RSI:${confluence.indicators.rsi.signal} BB:${confluence.indicators.bb.signal} VWAP:${confluence.indicators.vwap.signal}`
-        });
-        console.log(`   ⏸️ HOLD — no confluence`);
-        return;
-      }
-
-      this.history.addEvent('PIPELINE', { step: 6, name: 'EXECUTE', status: 'active', cycleId });
-      
-      let tradeResult;
-      if (confluence.signal === 'BUY' && !this.risk.currentPosition) {
-        // BUY
-        tradeResult = await this.sdex.buy(
-          confluence.suggestedSize,
-          priceData.price.toFixed(7)
-        );
-        
-        if (tradeResult.success) {
-          this.risk.openPosition(priceData.price, confluence.suggestedSize, 'BUY');
-          this.history.addEvent('TRADE', {
-            action: 'BUY',
-            amount: confluence.suggestedSize,
-            price: priceData.price,
-            confidence: confluence.confidence,
-            txHash: tradeResult.hash,
-            reason: confluence.reason
-          });
-          this.history.addEvent('CHAT', {
-            role: 'agent',
-            content: `📈 Cycle ${cycleId}: BUY ${confluence.suggestedSize} XLM @ $${priceData.price.toFixed(4)} | Confluence: ${(confluence.confidence * 100).toFixed(0)}% | TX: ${tradeResult.hash.substring(0, 12)}...`
-          });
-        }
-      } else if (confluence.signal === 'SELL' && this.risk.currentPosition) {
-        // SELL (close position)
-        tradeResult = await this.sdex.sell(
-          this.risk.currentPosition.amount,
-          priceData.price.toFixed(7)
-        );
-        
-        if (tradeResult.success) {
-          const closedTrade = this.risk.closePosition(priceData.price);
-          this.history.addEvent('TRADE', {
-            action: 'SELL',
-            amount: closedTrade.amount,
-            price: priceData.price,
-            pnl: closedTrade.pnl,
-            pnlPercent: closedTrade.pnlPercent,
-            txHash: tradeResult.hash,
-            reason: confluence.reason
-          });
-          this.history.addEvent('CHAT', {
-            role: 'agent',
-            content: `📉 Cycle ${cycleId}: SELL ${closedTrade.amount} XLM @ $${priceData.price.toFixed(4)} | P&L: ${closedTrade.pnl > 0 ? '+' : ''}$${closedTrade.pnl.toFixed(2)} (${closedTrade.pnlPercent > 0 ? '+' : ''}${closedTrade.pnlPercent.toFixed(1)}%) | TX: ${tradeResult.hash.substring(0, 12)}...`
-          });
-        }
+        console.log(`   📊 Price: $${price.price} | MPP TX: ${price.payment?.txHash?.substring(0, 12)}...`);
       } else {
-        // Already have position and signal matches, or signal contradicts position
-        this.history.addEvent('PIPELINE', { step: 6, name: 'EXECUTE', status: 'skip', reason: 'Position conflict' });
+        console.log(`   ❌ MPP poll failed: ${price.error}`);
+        this.broadcast('PIPELINE', { step: 2, name: 'Poll Price', status: 'error' });
+        this.isCycleRunning = false;
         return;
       }
+      this.broadcast('PIPELINE', { step: 2, name: 'Poll Price (MPP)', status: 'done' });
 
-      this.history.addEvent('PIPELINE', { step: 6, name: 'EXECUTE', status: 'done' });
-      
-      // Report final status
-      const finalBalances = await this.wallet.getBalances();
-      const riskStatus = this.risk.getStatus();
-      this.history.addEvent('STATUS', {
-        balances: finalBalances,
-        budget: this.budget.getStatus(),
-        risk: riskStatus,
-        cycle: cycleId
-      });
+      // ═══ STEP 3: ANALYZE (4 Indicators) ═══
+      this.broadcast('PIPELINE', { step: 3, name: 'Technical Analysis', status: 'running' });
+
+      const analysis = await this.execSkill('stellar-analyze/run-analysis.js');
+
+      if (analysis.success) {
+        this.broadcast('ANALYSIS', {
+          indicators: analysis.indicators,
+          confluence: analysis.confluence
+        });
+        console.log(`   🧠 Confluence: ${analysis.confluence?.signal} (${analysis.confluence?.confidence ? (analysis.confluence.confidence * 100).toFixed(0) : 0}%)`);
+      }
+      this.broadcast('PIPELINE', { step: 3, name: 'Technical Analysis', status: 'done' });
+
+      // ═══ STEP 4: x402 INTEL (OPTIONAL — low confidence) ═══
+      const confidence = analysis.confluence?.confidence || 0;
+      if (confidence < 0.5 && wallet.budget?.remaining >= 0.05) {
+        this.broadcast('PIPELINE', { step: 4, name: 'x402 Intel', status: 'running' });
+
+        const intel = await this.execSkill('stellar-x402-intel/get-intel.js');
+
+        if (intel.success) {
+          this.broadcast('X402_INTEL', {
+            sentiment: intel.intel?.sentiment,
+            cost: 0.05,
+            txHash: intel.payment?.txHash
+          });
+          console.log(`   🌐 x402 Intel: ${intel.intel?.sentiment} | TX: ${intel.payment?.txHash?.substring(0, 12) || 'fallback'}...`);
+        }
+        this.broadcast('PIPELINE', { step: 4, name: 'x402 Intel', status: 'done' });
+      } else {
+        this.broadcast('PIPELINE', { step: 4, name: 'x402 Intel', status: 'skip' });
+      }
+
+      // ═══ STEP 5: DECIDE + TRADE ═══
+      const signal = analysis.confluence?.signal;
+
+      if (signal === 'BUY' || signal === 'SELL') {
+        this.broadcast('PIPELINE', { step: 5, name: `Execute ${signal}`, status: 'running' });
+
+        const trade = await this.execSkill('stellar-trade/execute-trade.js', [signal, '50']);
+
+        if (trade.success) {
+          this.broadcast('TRADE', {
+            action: trade.action,
+            amount: trade.amount,
+            price: trade.price,
+            pnl: trade.pnl,
+            pnlPercent: trade.pnlPercent,
+            txHash: trade.txHash
+          });
+          console.log(`   📈 ${trade.action} ${trade.amount} XLM @ $${trade.price} | TX: ${trade.txHash?.substring(0, 12)}...`);
+        } else {
+          console.log(`   ⚠️ Trade: ${trade.error}`);
+        }
+        this.broadcast('PIPELINE', { step: 5, name: `Execute ${signal}`, status: trade.success ? 'done' : 'error' });
+      } else {
+        this.broadcast('PIPELINE', { step: 5, name: 'HOLD', status: 'done' });
+        this.broadcast('CHAT', { 
+          role: 'agent', 
+          content: `📊 Cycle #${cycleId}: HOLD (confidence ${(confidence * 100).toFixed(0)}%) — ${analysis.confluence?.reason || 'no consensus'}`
+        });
+        console.log(`   ⏸️ HOLD — confidence ${(confidence * 100).toFixed(0)}%`);
+      }
+
+      // ═══ STEP 6: REPORT ═══
+      this.broadcast('PIPELINE', { step: 6, name: 'Report', status: 'done' });
+      this.lastCycleResult = { cycleId, signal, confidence, price: price.price };
 
     } catch (error) {
       console.error(`   ❌ Cycle ${cycleId} error:`, error.message);
-      this.history.addEvent('ERROR', { cycle: cycleId, error: error.message });
+      this.broadcast('CHAT', { role: 'agent', content: `❌ Cycle error: ${error.message}` });
     }
+
+    this.isCycleRunning = false;
   }
 
-  /**
-   * start(intervalMs)
-   * Start autonomous trading loop.
-   * 
-   * PENJELASAN:
-   * Agent dijalankan sebagai loop yang berjalan setiap N milidetik.
-   * Default 15 detik per cycle — cukup cepat untuk demo yang impresif.
-   */
-  start(intervalMs = 15000) {
+  broadcast(type, data) {
+    this.history.addEvent(type, data);
+  }
+
+  start(intervalMs = 30000) {
     if (this.isRunning) return;
-    
     this.isRunning = true;
-    console.log('🚀 Agent started — autonomous trading loop active');
-    this.history.addEvent('CHAT', { role: 'agent', content: '🚀 StellarTradeAgent started! Running autonomous trading cycles every 15 seconds...' });
-    
-    // Run first cycle immediately
+    console.log(`🚀 Agent started — cycle every ${intervalMs / 1000}s`);
+    this.broadcast('CHAT', { role: 'agent', content: `🚀 Autonomous trading started! Cycling every ${intervalMs / 1000}s...` });
+
+    // First cycle immediately
     this.runCycle();
-    
+
     // Then repeat
     this.intervalId = setInterval(() => {
-      if (this.isRunning) {
-        this.runCycle();
-      }
+      if (this.isRunning) this.runCycle();
     }, intervalMs);
   }
 
-  /**
-   * stop()
-   * Stop autonomous trading loop.
-   */
   stop() {
     this.isRunning = false;
     if (this.intervalId) {
@@ -318,27 +251,14 @@ export class Agent {
       this.intervalId = null;
     }
     console.log('⏸️ Agent stopped');
-    this.history.addEvent('CHAT', { role: 'agent', content: '⏸️ Trading loop stopped.' });
-    
-    // Report final summary
-    const riskStatus = this.risk.getStatus();
-    const budgetStatus = this.budget.getStatus();
-    this.history.addEvent('CHAT', { 
-      role: 'agent', 
-      content: `📊 Summary: ${riskStatus.totalTrades} trades | Win rate: ${riskStatus.winRate}% | Net P&L: $${riskStatus.totalPnL.toFixed(2)} | Intel spent: $${budgetStatus.spent.toFixed(2)}`
-    });
+    this.broadcast('CHAT', { role: 'agent', content: `⏸️ Trading stopped. ${this.cycleCount} cycles completed.` });
   }
 
-  /**
-   * getStatus()
-   * Full agent status snapshot.
-   */
   getStatus() {
     return {
       isRunning: this.isRunning,
       cycleCount: this.cycleCount,
-      risk: this.risk.getStatus(),
-      budget: this.budget.getStatus()
+      lastCycleResult: this.lastCycleResult
     };
   }
 }
