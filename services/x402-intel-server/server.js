@@ -1,47 +1,37 @@
 /**
- * x402 Intel Server — Real HTTP 402 Payment Required
- * ====================================================
+ * x402 Intel Server — Official x402 Protocol SDK
+ * =================================================
  * 
  * PENJELASAN:
- * Server ini implement REAL x402 protocol:
+ * Server ini menggunakan OFFICIAL x402 SDK dari Stellar docs:
+ * - @x402/express: Middleware yang handle 402 Payment Required
+ * - @x402/stellar: Stellar network settlement (ExactStellarScheme)
+ * - HTTPFacilitatorClient: Coinbase facilitator untuk verify + settle
  * 
- * x402 Flow:
- * 1. Client GET /intel → Server return 402 + payment challenge
- * 2. Client buat Stellar TX (bayar XLM ke server wallet)
- * 3. Client GET /intel + header X-Payment-TX: <txHash>
- * 4. Server verify TX on-chain via Horizon API
- * 5. Server return premium intel data
+ * x402 FLOW (Official):
+ * 1. Client GET /intel → middleware return 402 + payment headers
+ * 2. Client's x402 SDK creates payment payload (Soroban SAC USDC transfer)
+ * 3. Client retries with payment headers
+ * 4. Facilitator verifies + settles on-chain
+ * 5. Server returns premium intel data
  * 
- * Setiap pembayaran = REAL on-chain Stellar transaction
- * yang bisa di-verify di stellar.expert!
+ * PAYMENT: USDC via Soroban SAC (Smart Asset Contract)
+ * NOT our custom XLM verification!
  * 
  * PORT: 3003
  */
 import express from 'express';
 import cors from 'cors';
-import crypto from 'crypto';
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-// ═══ Config ═══
-const PORT = process.env.X402_INTEL_PORT || 3003;
-const RECIPIENT = process.env.MARKET_DATA_STELLAR_ADDRESS || '';
-const HORIZON_URL = process.env.HORIZON_URL || 'https://horizon-testnet.stellar.org';
-const PAYMENT_AMOUNT = '0.1'; // 0.1 XLM per intel request
-const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-
-// ═══ In-memory stores ═══
-const pendingChallenges = new Map(); // memo → { amount, destination, expires }
-const verifiedPayments = new Set();  // txHash → already used
-const paymentLog = [];
-
-// Load .env manually (server may run standalone)
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { paymentMiddlewareFromConfig } from '@x402/express';
+import { HTTPFacilitatorClient } from '@x402/core/server';
+import { ExactStellarScheme } from '@x402/stellar/exact/server';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Load .env manually
 const envPath = path.resolve(__dirname, '../../.env');
 if (fs.existsSync(envPath)) {
   const content = fs.readFileSync(envPath, 'utf-8');
@@ -57,6 +47,20 @@ if (fs.existsSync(envPath)) {
     if (!process.env[k]) process.env[k] = v;
   }
 }
+
+// ═══ Config ═══
+const PORT = process.env.X402_INTEL_PORT || 3003;
+const PAY_TO = process.env.MARKET_DATA_STELLAR_ADDRESS;
+const NETWORK = 'stellar:testnet';
+const FACILITATOR_URL = 'https://x402.org/facilitator'; // Official Coinbase facilitator
+const PRICE = '$0.01'; // 0.01 USDC per request
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Track payments for dashboard
+const paymentLog = [];
 
 /**
  * Generate sentiment analysis (premium data)
@@ -112,171 +116,70 @@ function generatePremiumIntel() {
   return { sentiment, confidence, analysis, recommendation, dataPoints: prices.length };
 }
 
-/**
- * Verify Stellar payment on-chain via Horizon
- */
-async function verifyPayment(txHash, expectedMemo) {
-  try {
-    const res = await fetch(`${HORIZON_URL}/transactions/${txHash}`);
-    if (!res.ok) return { valid: false, reason: `TX not found: ${res.status}` };
-    const tx = await res.json();
+// ═══ Root info (free) ═══
+app.get('/', (_, res) => res.json({
+  name: 'x402 Market Intelligence Server',
+  protocol: 'x402 (Official SDK)',
+  network: NETWORK,
+  facilitator: FACILITATOR_URL,
+  pricing: { '/intel': { cost: PRICE, asset: 'USDC', description: 'Premium sentiment analysis' } },
+  status: 'active',
+  totalPayments: paymentLog.length
+}));
 
-    // Check TX was successful
-    if (!tx.successful) return { valid: false, reason: 'TX failed on-chain' };
+// Health check
+app.get('/health', (_, res) => res.json({ status: 'ok', protocol: 'x402-sdk' }));
 
-    // Check memo matches
-    if (tx.memo !== expectedMemo && !expectedMemo) {
-      // If no specific memo expected, just check it's paid to us
-    } else if (expectedMemo && tx.memo !== expectedMemo) {
-      return { valid: false, reason: `Memo mismatch: got ${tx.memo}, expected ${expectedMemo}` };
-    }
-
-    // Check operations for payment to our address
-    const opsRes = await fetch(`${HORIZON_URL}/transactions/${txHash}/operations`);
-    const opsData = await opsRes.json();
-    const ops = opsData._embedded?.records || [];
-
-    let paymentFound = false;
-    const recipient = process.env.MARKET_DATA_STELLAR_ADDRESS;
-    for (const op of ops) {
-      if ((op.type === 'payment' || op.type === 'create_account') &&
-          op.to === recipient) {
-        const amount = parseFloat(op.amount);
-        if (amount >= parseFloat(PAYMENT_AMOUNT)) {
-          paymentFound = true;
-        }
-      }
-    }
-
-    if (!paymentFound) {
-      return { valid: false, reason: `Payment to ${recipient} not found in TX` };
-    }
-
-    return { valid: true, tx };
-  } catch (err) {
-    return { valid: false, reason: `Verification error: ${err.message}` };
-  }
-}
-
-// ═══ Endpoints ═══
-
-/**
- * GET / — Server info (free)
- */
-app.get('/', (req, res) => {
-  res.json({
-    name: 'x402 Market Intelligence Server',
-    protocol: 'x402 (HTTP 402 Payment Required)',
-    network: 'stellar:testnet',
-    pricing: {
-      '/intel': { cost: PAYMENT_AMOUNT, asset: 'XLM (native)', description: 'Premium sentiment analysis' }
-    },
-    status: 'active',
-    totalPayments: paymentLog.length
-  });
-});
-
-/**
- * GET /intel — Premium intelligence (paid via x402)
- * 
- * Without X-Payment-TX header → returns 402 challenge
- * With valid X-Payment-TX → returns premium data
- */
-app.get('/intel', async (req, res) => {
-  const paymentTx = req.headers['x-payment-tx'];
-
-  if (!paymentTx) {
-    // ═══ Step 1: Issue Payment Challenge (402) ═══
-    const memo = `x402-${crypto.randomBytes(4).toString('hex')}`;
-    const expires = new Date(Date.now() + CHALLENGE_TTL_MS).toISOString();
-
-    pendingChallenges.set(memo, {
-      amount: PAYMENT_AMOUNT,
-      destination: process.env.MARKET_DATA_STELLAR_ADDRESS,
-      asset: 'native',
-      expires,
-      issuedAt: new Date().toISOString()
-    });
-
-    console.log(`🔒 [x402] Challenge issued: ${memo} | Pay ${PAYMENT_AMOUNT} XLM`);
-
-    return res.status(402).json({
-      protocol: 'x402',
-      version: '1.0',
-      payment: {
-        network: 'stellar:testnet',
-        destination: process.env.MARKET_DATA_STELLAR_ADDRESS,
-        amount: PAYMENT_AMOUNT,
-        asset: 'native',
-        asset_code: 'XLM',
-        memo,
-        memo_type: 'text',
-        expires
+// ═══ x402 Payment Middleware (Official SDK) ═══
+// This automatically handles the 402 flow:
+// - Returns 402 + payment headers to unpaid requests
+// - Verifies payment via Facilitator on retry
+// - Settles on-chain via Soroban SAC USDC transfer
+app.use(
+  paymentMiddlewareFromConfig(
+    {
+      'GET /intel': {
+        accepts: {
+          scheme: 'exact',
+          price: PRICE,
+          network: NETWORK,
+          payTo: PAY_TO,
+        },
+        description: 'Premium AI market intelligence with sentiment analysis',
       },
-      description: 'Pay to access premium market intelligence',
-      how_to_pay: 'Create a Stellar payment TX with the specified memo, then resend this request with X-Payment-TX: <tx_hash>'
-    });
-  }
+    },
+    new HTTPFacilitatorClient({ url: FACILITATOR_URL }),
+    [{ network: NETWORK, server: new ExactStellarScheme() }],
+  )
+);
 
-  // ═══ Step 2: Verify Payment ═══
-  
-  // Check if TX already used
-  if (verifiedPayments.has(paymentTx)) {
-    return res.status(402).json({
-      error: 'Payment TX already used. Create a new payment.',
-      protocol: 'x402'
-    });
-  }
-
-  console.log(`🔍 [x402] Verifying payment TX: ${paymentTx.substring(0, 12)}...`);
-  const verification = await verifyPayment(paymentTx);
-
-  if (!verification.valid) {
-    console.log(`❌ [x402] Verification failed: ${verification.reason}`);
-    return res.status(402).json({
-      error: `Payment verification failed: ${verification.reason}`,
-      protocol: 'x402'
-    });
-  }
-
-  // ═══ Step 3: Payment verified → return premium data ═══
-  verifiedPayments.add(paymentTx);
-
+// ═══ Protected endpoint (only served after x402 payment) ═══
+app.get('/intel', (req, res) => {
   const intel = generatePremiumIntel();
 
+  // Log payment for dashboard
   paymentLog.push({
-    txHash: paymentTx,
-    amount: PAYMENT_AMOUNT,
-    asset: 'XLM',
-    from: verification.tx?.source_account,
-    timestamp: new Date().toISOString(),
-    explorerUrl: `https://stellar.expert/explorer/testnet/tx/${paymentTx}`
+    protocol: 'x402',
+    amount: PRICE,
+    asset: 'USDC',
+    method: 'x402 SDK (Soroban SAC)',
+    timestamp: new Date().toISOString()
   });
 
-  console.log(`✅ [x402] Payment verified! Serving premium intel. Total payments: ${paymentLog.length}`);
+  console.log(`✅ [x402-SDK] Payment verified via Facilitator! Serving intel #${paymentLog.length}`);
 
   res.json({
     success: true,
     protocol: 'x402',
+    sdk: 'official @x402/express',
     payment_verified: true,
-    payment: {
-      txHash: paymentTx,
-      amount: PAYMENT_AMOUNT,
-      asset: 'XLM',
-      explorerUrl: `https://stellar.expert/explorer/testnet/tx/${paymentTx}`,
-      status: 'verified_on_chain'
-    },
     intel,
-    server_stats: {
-      totalPaymentsReceived: paymentLog.length
-    }
+    server_stats: { totalPaymentsReceived: paymentLog.length }
   });
 });
 
-/**
- * GET /payments — Payment log (for monitoring)
- */
-app.get('/payments', (req, res) => {
+// ═══ Payment log (for monitoring) ═══
+app.get('/payments', (_, res) => {
   res.json({ payments: paymentLog });
 });
 
@@ -285,12 +188,16 @@ app.listen(PORT, () => {
   console.log('');
   console.log('🌐 ════════════════════════════════════════');
   console.log('   x402 Market Intelligence Server');
+  console.log('   ⚡ OFFICIAL SDK (@x402/express)');
   console.log('════════════════════════════════════════');
-  console.log(`   Port:      ${PORT}`);
-  console.log(`   Protocol:  x402 (HTTP 402 Payment Required)`);
-  console.log(`   Network:   stellar:testnet`);
-  console.log(`   Recipient: ${process.env.MARKET_DATA_STELLAR_ADDRESS || 'NOT SET'}`);
-  console.log(`   Price:     ${PAYMENT_AMOUNT} XLM per request`);
+  console.log(`   Port:        ${PORT}`);
+  console.log(`   Protocol:    x402 (HTTP 402 Payment Required)`);
+  console.log(`   SDK:         @x402/express + @x402/stellar`);
+  console.log(`   Facilitator: ${FACILITATOR_URL}`);
+  console.log(`   Network:     ${NETWORK}`);
+  console.log(`   Pay-To:      ${PAY_TO || 'NOT SET'}`);
+  console.log(`   Price:       ${PRICE} USDC per request`);
+  console.log(`   Settlement:  Soroban SAC USDC transfer`);
   console.log('════════════════════════════════════════');
   console.log('   Ready to serve paid intelligence! 🚀');
   console.log('');

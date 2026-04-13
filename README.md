@@ -48,12 +48,12 @@ Every interaction creates a verifiable Stellar transaction:
 │                                                               │
 │  ┌───────────────┐     ┌───────────────┐     ┌────────────┐ │
 │  │  MPP Server   │     │  x402 Server  │     │  Stellar   │ │
-│  │  (Port 3002)  │     │  (Port 3003)  │     │  Testnet   │ │
-│  │               │     │               │     │  (Horizon) │ │
-│  │  Price data   │     │  Sentiment    │     │  SDEX DEX  │ │
-│  │  per request  │     │  analysis     │     │            │ │
+│  │  @stellar/mpp │     │  @x402/express│     │  Testnet   │ │
+│  │  (Port 3002)  │     │  (Port 3003)  │     │  (Horizon) │ │
+│  │  USDC via SAC │     │  USDC via     │     │  SDEX DEX  │ │
+│  │  per request  │     │  Facilitator  │     │            │ │
 │  └───────┬───────┘     └───────┬───────┘     └─────┬──────┘ │
-│          │ 402+pay             │ 402+pay           │         │
+│          │ 402+USDC            │ 402+USDC          │         │
 │          ▼                     ▼                   │         │
 │  ┌─────────────────────────────────────────────────┤         │
 │  │              Agent Server (Port 3000)           │         │
@@ -97,9 +97,9 @@ Each skill is an independent script that can be executed by OpenClaw TUI:
 | Skill | Cost | What It Does |
 |-------|------|-------------|
 | `/stellar-wallet` | Free | Check XLM/USDC balances + budget |
-| `/stellar-poll-price` | 0.05 XLM | Pay MPP → get XLM/USDC price |
+| `/stellar-poll-price` | 0.01 USDC | Pay MPP (Soroban SAC) → get XLM/USDC price |
 | `/stellar-analyze` | Free | Run 4 indicators + confluence |
-| `/stellar-x402-intel` | 0.10 XLM | Pay x402 → get sentiment |
+| `/stellar-x402-intel` | 0.01 USDC | Pay x402 (via Facilitator) → get sentiment |
 | `/stellar-trade` | Gas fee | Execute SDEX trade + audit memo |
 
 ---
@@ -144,13 +144,16 @@ npm run demo
 
 | Layer | Technology |
 |-------|-----------|
-| Blockchain | Stellar Testnet (Horizon API) |
-| Payments | MPP Charge + x402 (HTTP 402) |
+| Blockchain | Stellar Testnet (Horizon + Soroban RPC) |
+| x402 Protocol | `@x402/express` + `@x402/stellar` + `@x402/fetch` (Official SDK) |
+| MPP Protocol | `@stellar/mpp` + `mppx` (Official SDK) |
+| Settlement | **Soroban SAC USDC transfer** (Smart Asset Contract) |
+| x402 Facilitator | `x402.org/facilitator` (Coinbase managed) |
 | Trading | Stellar SDEX (manageSellOffer/manageBuyOffer) |
 | Backend | Node.js + Express + SSE |
 | Frontend | React 19 + Vite + Recharts |
 | Agent | OpenClaw-compatible skills |
-| SDK | @stellar/stellar-sdk v15 |
+| SDK | @stellar/stellar-sdk v14/v15, @x402/*, @stellar/mpp |
 
 ---
 
@@ -179,11 +182,12 @@ hackathon-stellar/
 ## 🏆 Built for Stellar Hacks: Agents
 
 This project demonstrates:
-- **x402 Protocol** — Real HTTP 402 payment flow with on-chain verification
-- **MPP Charge** — Pay-per-request market data with Stellar payments
-- **SDEX Trading** — Autonomous on-chain order execution
-- **OpenClaw Skills** — Modular, independently executable agent capabilities
-- **Machine-to-Machine Commerce** — Two agents exchanging value on Stellar
+- **x402 Protocol (Official SDK)** — `@x402/express` middleware + Coinbase Facilitator + Soroban SAC USDC settlement
+- **MPP Charge (Official SDK)** — `@stellar/mpp` + `mppx` with Soroban SAC USDC transfer
+- **Soroban SAC** — Payments settled via Stellar Asset Contract (smart contract) on Soroban
+- **SDEX Trading** — Autonomous on-chain order execution with AI reasoning in TX memo
+- **OpenClaw Skills** — 5 modular, independently executable agent capabilities
+- **Machine-to-Machine Commerce** — Two agents exchanging USDC value on Stellar
 
 ---
 

@@ -1,27 +1,32 @@
 /**
- * MPP Market Data Server — REAL Payment Verification
- * ====================================================
+ * MPP Market Data Server — Official @stellar/mpp SDK
+ * =====================================================
  * 
- * PENJELASAN MPP CHARGE FLOW:
- * MPP (Machine Payments Protocol) mode Charge = bayar per-request.
+ * PENJELASAN:
+ * Server ini menggunakan OFFICIAL MPP SDK dari Stellar docs:
+ * - @stellar/mpp: MPP Charge mode (Soroban SAC USDC transfer)
+ * - mppx: Core MPP framework for server
  * 
- * FLOW REAL:
- * 1. Client GET /price (tanpa payment) → Server return 402 + invoice
- * 2. Client buat Stellar payment TX ke server wallet
- * 3. Client GET /price + header X-Payment-TX: <txHash>
- * 4. Server verify TX on-chain via Horizon API
- * 5. Server return market data
+ * MPP CHARGE FLOW (Official):
+ * 1. Client GET /price → server return 402 + payment challenge headers
+ * 2. Client (mppx/client) auto-builds Soroban SAC USDC transfer
+ * 3. Client retries with signed credential
+ * 4. Server verifies SAC invocation, broadcasts TX on-chain
+ * 5. Server returns market data + receipt
  * 
- * Setiap request = REAL on-chain Stellar transaction!
+ * PAYMENT: USDC via Soroban SAC (no external facilitator needed!)
+ * SETTLEMENT: Server verifies + broadcasts directly
  * 
  * PORT: 3002
  */
 import express from 'express';
 import cors from 'cors';
-import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { Mppx } from 'mppx/server';
+import { stellar } from '@stellar/mpp/charge/server';
+import { USDC_SAC_TESTNET } from '@stellar/mpp';
 import { getMarketData } from './price-engine.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -45,160 +50,139 @@ if (fs.existsSync(envPath)) {
 
 const PORT = process.env.MPP_PORT || 3002;
 const RECIPIENT = process.env.MARKET_DATA_STELLAR_ADDRESS;
-const HORIZON_URL = process.env.HORIZON_URL || 'https://horizon-testnet.stellar.org';
-const PAYMENT_AMOUNT = '0.05'; // 0.05 XLM per price poll (small for frequent calls)
+const MPP_SECRET_KEY = process.env.MPP_SECRET_KEY || 'stellar-trade-agent-mpp-key-2026';
+const PAYMENT_AMOUNT = '0.01'; // 0.01 USDC per price poll
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ═══ State ═══
-const verifiedPayments = new Set();
+// Track payments for dashboard
 const paymentLog = [];
 
-/**
- * Verify Stellar payment on-chain via Horizon
- */
-async function verifyPayment(txHash) {
-  try {
-    const res = await fetch(`${HORIZON_URL}/transactions/${txHash}`);
-    if (!res.ok) return { valid: false, reason: `TX not found: ${res.status}` };
-    const tx = await res.json();
-
-    if (!tx.successful) return { valid: false, reason: 'TX failed on-chain' };
-
-    // Check operations
-    const opsRes = await fetch(`${HORIZON_URL}/transactions/${txHash}/operations`);
-    const opsData = await opsRes.json();
-    const ops = opsData._embedded?.records || [];
-
-    let paymentFound = false;
-    for (const op of ops) {
-      if ((op.type === 'payment' || op.type === 'create_account') && op.to === RECIPIENT) {
-        if (parseFloat(op.amount) >= parseFloat(PAYMENT_AMOUNT)) {
-          paymentFound = true;
-        }
-      }
-    }
-
-    if (!paymentFound) return { valid: false, reason: 'Payment to server not found in TX' };
-
-    return { valid: true, tx };
-  } catch (err) {
-    return { valid: false, reason: `Verification error: ${err.message}` };
-  }
+// ═══ Create MPP server instance (Official SDK) ═══
+if (!RECIPIENT) {
+  console.error('❌ Set MARKET_DATA_STELLAR_ADDRESS in .env (Stellar public key G...)');
+  process.exit(1);
 }
 
-/**
- * GET / — Server info (free)
- */
-app.get('/', (req, res) => {
-  res.json({
-    name: 'MPP Market Data Server',
-    protocol: 'MPP Charge (real on-chain payment)',
-    network: 'stellar:testnet',
-    recipient: RECIPIENT,
-    pricing: {
-      '/price': { cost: PAYMENT_AMOUNT, asset: 'XLM (native)', description: 'XLM/USDC price + 20pt history' }
-    },
-    status: 'active',
-    totalPayments: paymentLog.length
-  });
+const mppx = Mppx.create({
+  secretKey: MPP_SECRET_KEY,
+  methods: [
+    stellar.charge({
+      recipient: RECIPIENT,
+      currency: USDC_SAC_TESTNET,
+      network: 'stellar:testnet',
+    }),
+  ],
 });
 
 /**
- * GET /price — Market data (paid via MPP Charge)
- * 
- * Without X-Payment-TX → 402 + payment invoice
- * With valid X-Payment-TX → market data
+ * Convert Node.js IncomingMessage to Web Request
+ * (Required by mppx which uses Web Request API)
  */
+function toWebRequest(req) {
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (value == null) continue;
+    if (Array.isArray(value)) {
+      for (const entry of value) headers.append(key, entry);
+    } else {
+      headers.set(key, value);
+    }
+  }
+  return new Request(`http://localhost:${PORT}${req.url}`, {
+    method: req.method,
+    headers,
+  });
+}
+
+// ═══ Root info (free) ═══
+app.get('/', (_, res) => res.json({
+  name: 'MPP Market Data Server',
+  protocol: 'MPP Charge (Official @stellar/mpp SDK)',
+  network: 'stellar:testnet',
+  settlement: 'Soroban SAC USDC transfer',
+  recipient: RECIPIENT,
+  pricing: { '/price': { cost: `${PAYMENT_AMOUNT} USDC`, description: 'XLM/USDC price + 20pt history' } },
+  status: 'active',
+  totalPayments: paymentLog.length
+}));
+
+// Health check
+app.get('/health', (_, res) => res.json({ status: 'ok', protocol: 'mpp-sdk' }));
+
+// ═══ Payment-gated endpoint (Official MPP Charge) ═══
 app.get('/price', async (req, res) => {
-  const paymentTx = req.headers['x-payment-tx'];
+  const webReq = toWebRequest(req);
 
-  if (!paymentTx) {
-    // ═══ Issue MPP Invoice (402) ═══
-    const memo = `mpp-${crypto.randomBytes(4).toString('hex')}`;
-    
-    console.log(`💳 [MPP] Invoice issued: ${memo} | ${PAYMENT_AMOUNT} XLM`);
+  // Run MPP charge flow
+  const result = await mppx.charge({
+    amount: PAYMENT_AMOUNT,
+    description: 'Real-time XLM/USDC market data',
+  })(webReq);
 
-    return res.status(402).json({
-      protocol: 'MPP Charge',
-      version: '1.0',
-      payment: {
-        network: 'stellar:testnet',
-        destination: RECIPIENT,
-        amount: PAYMENT_AMOUNT,
-        asset: 'native',
-        asset_code: 'XLM',
-        memo,
-        memo_type: 'text'
-      },
-      description: 'Pay to access real-time XLM/USDC market data'
-    });
+  if (result.status === 402) {
+    // ═══ 402: Send payment challenge ═══
+    const challenge = result.challenge;
+    challenge.headers.forEach((value, key) => res.setHeader(key, value));
+    console.log(`💳 [MPP-SDK] Challenge issued | ${PAYMENT_AMOUNT} USDC`);
+    return res.status(402).send(await challenge.text());
   }
 
-  // ═══ Verify Payment ═══
-  if (verifiedPayments.has(paymentTx)) {
-    return res.status(402).json({ error: 'Payment TX already used', protocol: 'MPP' });
-  }
-
-  const verification = await verifyPayment(paymentTx);
-  
-  if (!verification.valid) {
-    console.log(`❌ [MPP] Verification failed: ${verification.reason}`);
-    return res.status(402).json({
-      error: `Payment verification failed: ${verification.reason}`,
-      protocol: 'MPP'
-    });
-  }
-
-  // ═══ Payment verified → serve data ═══
-  verifiedPayments.add(paymentTx);
+  // ═══ Payment verified! Serve data ═══
   const data = getMarketData();
 
   paymentLog.push({
-    txHash: paymentTx,
+    protocol: 'MPP Charge',
     amount: PAYMENT_AMOUNT,
-    asset: 'XLM',
-    from: verification.tx?.source_account,
+    asset: 'USDC',
+    method: 'MPP SDK (Soroban SAC)',
     price_served: data.price,
-    timestamp: new Date().toISOString(),
-    explorerUrl: `https://stellar.expert/explorer/testnet/tx/${paymentTx}`
+    timestamp: new Date().toISOString()
   });
 
-  console.log(`📊 [MPP] ✅ Payment verified! Price: $${data.price} | TX: ${paymentTx.substring(0, 12)}... | Total: ${paymentLog.length}`);
+  console.log(`📊 [MPP-SDK] ✅ Payment verified! Price: $${data.price} | Payment #${paymentLog.length}`);
 
-  res.json({
+  // Build response with receipt
+  const responseBody = {
     success: true,
     payment: {
       protocol: 'MPP Charge',
+      sdk: '@stellar/mpp + mppx',
       amount: PAYMENT_AMOUNT,
-      asset: 'XLM',
-      txHash: paymentTx,
-      explorerUrl: `https://stellar.expert/explorer/testnet/tx/${paymentTx}`,
+      asset: 'USDC',
+      settlement: 'Soroban SAC USDC transfer',
       status: 'verified_on_chain'
     },
     data
-  });
+  };
+
+  const response = result.withReceipt(Response.json(responseBody));
+  response.headers.forEach((value, key) => res.setHeader(key, value));
+  return res.status(response.status).send(await response.text());
 });
 
-/**
- * GET /payments — Payment log
- */
-app.get('/payments', (req, res) => {
+// ═══ Payment log ═══
+app.get('/payments', (_, res) => {
   res.json({ payments: paymentLog });
 });
 
+// Start
 app.listen(PORT, () => {
   console.log('');
   console.log('📊 ════════════════════════════════════════');
-  console.log('   MPP Market Data Server (REAL PAYMENTS)');
+  console.log('   MPP Market Data Server');
+  console.log('   ⚡ OFFICIAL SDK (@stellar/mpp + mppx)');
   console.log('════════════════════════════════════════');
-  console.log(`   Port:      ${PORT}`);
-  console.log(`   Protocol:  MPP Charge (on-chain verified)`);
-  console.log(`   Network:   stellar:testnet`);
-  console.log(`   Recipient: ${RECIPIENT || 'NOT SET'}`);
-  console.log(`   Price:     ${PAYMENT_AMOUNT} XLM per request`);
+  console.log(`   Port:       ${PORT}`);
+  console.log(`   Protocol:   MPP Charge (Soroban SAC)`);
+  console.log(`   SDK:        @stellar/mpp + mppx`);
+  console.log(`   Network:    stellar:testnet`);
+  console.log(`   Currency:   USDC (Soroban SAC Testnet)`);
+  console.log(`   Recipient:  ${RECIPIENT || 'NOT SET'}`);
+  console.log(`   Price:      ${PAYMENT_AMOUNT} USDC per request`);
+  console.log(`   Settlement: Server verifies + broadcasts`);
   console.log('════════════════════════════════════════');
   console.log('   Ready to serve market data! 🚀');
   console.log('');
