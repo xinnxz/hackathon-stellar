@@ -131,7 +131,7 @@ app.get('/price', async (req, res) => {
   }
 
   // ═══ Payment verified! Serve data ═══
-  const data = getMarketData();
+  const data = await getMarketData();
 
   paymentLog.push({
     protocol: 'MPP Charge',

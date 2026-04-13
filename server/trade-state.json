@@ -1,7 +1,1 @@
-{
-  "trades": [],
-  "totalPnL": 0,
-  "winningTrades": 0,
-  "losingTrades": 0,
-  "lastPosition": null
-}
+{"trades":[],"totalPnL":0,"winningTrades":0,"losingTrades":0,"lastPosition":null,"lastTradeTime":0}

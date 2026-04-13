@@ -164,7 +164,11 @@ export class Agent {
 
       // ═══ STEP 4: x402 INTEL (OPTIONAL — low confidence) ═══
       const confidence = analysis.confluence?.confidence || 0;
-      if (confidence < 0.5 && wallet.budget?.remaining >= 0.05) {
+      const signal = analysis.confluence?.signal;
+      
+      // SCALPER LOGIC: Only buy intel if we have a weak signal that needs confirmation
+      // Skip x402 if signal is already HOLD (saves $0.05 per cycle)
+      if (signal !== 'HOLD' && confidence < 0.6 && wallet.budget?.remaining >= 0.05) {
         this.broadcast('PIPELINE', { step: 4, name: 'x402 Intel', status: 'running' });
 
         const intel = await this.execSkill('stellar-x402-intel/get-intel.js');
@@ -183,12 +187,11 @@ export class Agent {
       }
 
       // ═══ STEP 5: DECIDE + TRADE ═══
-      const signal = analysis.confluence?.signal;
 
       if (signal === 'BUY' || signal === 'SELL') {
         this.broadcast('PIPELINE', { step: 5, name: `Execute ${signal}`, status: 'running' });
 
-        const trade = await this.execSkill('stellar-trade/execute-trade.js', [signal, '50']);
+        const trade = await this.execSkill('stellar-trade/execute-trade.js', [signal, '200']);
 
         if (trade.success) {
           this.broadcast('TRADE', {
