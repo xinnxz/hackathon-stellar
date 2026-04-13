@@ -153,7 +153,7 @@ async function main() {
         selling: USDC,
         buying: XLM,
         buyAmount: amount.toFixed(7),
-        price: (1 / currentPrice).toFixed(7), // Price in USDC per XLM inverted
+        price: currentPrice.toFixed(7), // Price of 1 XLM in USDC
         offerId: '0' // New offer
       });
     } else {
