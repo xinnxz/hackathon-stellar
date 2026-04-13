@@ -1,1 +1,141 @@
-{"trades":[],"totalPnL":0,"winningTrades":0,"losingTrades":0,"lastPosition":null,"lastTradeTime":0}
+{
+  "trades": [
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.124558,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "d6a6121cbaacc3cd354008055935f2febcfe444efc34a036dd1ab9b9fd700b2f",
+      "timestamp": "2026-04-13T21:21:57.555Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.140327,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "70f92a53ce28e3e57c1c6babccdc5fdd407e8b367eb0871a61f23d1dea5f3dfe",
+      "timestamp": "2026-04-13T21:23:12.650Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.151233,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "9078be53cd34cd90d5d4bfc3b993d9e8679430c08afd2b69c4acf60c6d3e08fe",
+      "timestamp": "2026-04-13T21:24:57.553Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.14291,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "9a231b700084ed86b56b07bc2bf3842455a7a02d283fbe8e99a17d61929a6d1b",
+      "timestamp": "2026-04-13T21:26:27.555Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.137058,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "cd5ba1d5936853bec9f6fe8ba2592ddfac67d38c0956158819a4f4e37df2f160",
+      "timestamp": "2026-04-13T21:28:22.654Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.153012,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "7cced54780081b66707adac6a28b47da4c1a0b178c91cab9616eae8be25991eb",
+      "timestamp": "2026-04-13T21:29:28.649Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.170833,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "a8423d7d60424b4a31061ce80e662374334fcec7681ca5a3efbac62b8235e20f",
+      "timestamp": "2026-04-13T21:30:43.555Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.178185,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "2baf7a44201f3975e81d7935a5b01c3f51c8e72d7ec70115e6daedb7f6f17853",
+      "timestamp": "2026-04-13T21:32:28.552Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.179089,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "ca8c732eac578ac0af03fb8079afb43ce5a85e8d82719ea9bf66d3f9bba7c7dc",
+      "timestamp": "2026-04-13T21:33:43.650Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.171371,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "c6bdc25f3446a181170775f449007fea87d263a92cf90ad2b1d489c3213860a9",
+      "timestamp": "2026-04-13T21:34:58.552Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.171521,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "15cacca3516836ce6f541d017bbbcf0bb80121547d93b45a2308fc484f247c61",
+      "timestamp": "2026-04-13T21:36:23.550Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.173211,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "91b8ba2a788721560a021f216167c611c454e6cbb47f6c68d313889de8346de2",
+      "timestamp": "2026-04-13T21:37:44.551Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.162293,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "6a950010cccbd407f4c03a9fbbcafd87cc226c4b6172b26a0a42b9ce28f9fffd",
+      "timestamp": "2026-04-13T21:38:59.649Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.155307,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "ff9292bb81a58a2a0debb0d3166643bdd490601e499fa3d43cbbf5f007c3f401",
+      "timestamp": "2026-04-13T21:42:59.647Z"
+    }
+  ],
+  "totalPnL": 0,
+  "winningTrades": 0,
+  "losingTrades": 0,
+  "lastPosition": null,
+  "lastTradeTime": 1776116579647,
+  "position": {
+    "side": "SELL",
+    "amount": 200,
+    "entryPrice": 0.155307,
+    "timestamp": "2026-04-13T21:42:59.647Z"
+  }
+}

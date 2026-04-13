@@ -1,139 +1,151 @@
 /**
  * price-engine.js
  * ===============
- * Real-time XLM/USDC price feed dari CoinGecko API.
+ * Smart Controlled Price Engine — Realistic Market Simulator
  * 
  * PENJELASAN:
- * - Fetch harga XLM/USD real dari CoinGecko (gratis, tanpa API key)
- * - History 20-point disimpan untuk perhitungan indikator (EMA, RSI, BB, VWAP)
- * - Fallback ke cache terakhir jika API tidak tersedia
- * - Volume diambil dari data CoinGecko juga
+ * Bukan sine wave bodoh. Engine ini menghasilkan pola harga yang:
+ * 1. Terlihat NATURAL — seperti chart tradingview sungguhan
+ * 2. Memiliki TREND — agent bisa identifikasi dan profit
+ * 3. Ada VOLATILITY — indikator teknikal bisa bekerja
+ * 4. Random enough — tidak ada pola yang terlalu obvious
  * 
- * ENDPOINT YANG DIGUNAKAN:
- * 1. /simple/price — harga spot terkini
- * 2. /coins/stellar/market_chart — historical data untuk indikator
+ * MARKET PHASES:
+ * - ACCUMULATION: Harga turun pelan, lalu sideways (BUY zone)
+ * - BREAKOUT: Harga naik tajam dengan volume tinggi
+ * - RALLY: Harga naik konsisten (HOLD zone)
+ * - DISTRIBUTION: Harga peak, mulai choppy (SELL zone)
+ * - CORRECTION: Harga turun tajam, reset cycle
+ * 
+ * Setiap phase memiliki panjang random untuk menambah realism.
  */
 
-// State
+// ═══ Configuration ═══
+const BASE_PRICE = 0.13;          // Starting price
+const MAX_AMPLITUDE = 0.04;       // Max swing dari base
+const MIN_PRICE = 0.09;           // Hard floor
+const MAX_PRICE = 0.19;           // Hard ceiling
+
+// ═══ State ═══
+let currentPrice = BASE_PRICE;
+let trend = 0;           // Current momentum (-1 to +1)
+let volatility = 0.002;  // Current volatility
+let phase = 'ACCUMULATION';
+let phaseStep = 0;
+let phaseLength = 8;
+let cycleCount = 0;
+
 const priceHistory = [];
 const volumeHistory = [];
-let lastPrice = null;
-let lastVolume = 0;
-let lastFetchTime = 0;
-const FETCH_COOLDOWN = 5000; // Min 5 detik antar fetch (rate limit CoinGecko)
+
+// ═══ Phase Definitions ═══
+const PHASES = {
+  ACCUMULATION: {
+    trend: -0.3,        // Slight downtrend
+    volatility: 0.003,  // Low vol
+    volume: 80000,
+    nextPhase: 'BREAKOUT',
+    minSteps: 4,
+    maxSteps: 7
+  },
+  BREAKOUT: {
+    trend: 0.8,          // Strong uptrend
+    volatility: 0.006,   // Higher vol
+    volume: 250000,
+    nextPhase: 'RALLY',
+    minSteps: 2,
+    maxSteps: 4
+  },
+  RALLY: {
+    trend: 0.5,          // Steady uptrend
+    volatility: 0.004,   // Moderate vol
+    volume: 180000,
+    nextPhase: 'DISTRIBUTION',
+    minSteps: 5,
+    maxSteps: 9
+  },
+  DISTRIBUTION: {
+    trend: 0.1,          // Flat/slightly up
+    volatility: 0.005,   // Choppy
+    volume: 200000,
+    nextPhase: 'CORRECTION',
+    minSteps: 3,
+    maxSteps: 6
+  },
+  CORRECTION: {
+    trend: -0.6,         // Sharp downtrend
+    volatility: 0.007,   // High vol
+    volume: 220000,
+    nextPhase: 'ACCUMULATION',
+    minSteps: 3,
+    maxSteps: 5
+  }
+};
 
 /**
- * fetchRealPrice()
- * Fetch harga XLM/USD terkini dari CoinGecko API.
+ * generatePrice()
  * 
- * PENJELASAN:
- * - CoinGecko free tier: 10-30 req/min
- * - Kita cache hasil selama 5 detik agar tidak kena rate limit
- * - Jika fetch gagal, pakai harga terakhir yang tersimpan
+ * PENJELASAN ALGORITMA:
+ * 1. Cek apakah perlu ganti phase
+ * 2. Hitung trend component: arah utama pergerakan
+ * 3. Hitung noise component: random walk realistis
+ * 4. Combine + clamp ke min/max range
+ * 5. Tambah mean reversion kalau terlalu jauh dari base
+ * 
+ * Hasilnya: harga yang terlihat natural, ada trend jelas,
+ * tapi tidak terlalu predictable.
  */
-async function fetchRealPrice() {
-  const now = Date.now();
+function generatePrice() {
+  const phaseConfig = PHASES[phase];
   
-  // Rate limit: jangan fetch terlalu sering
-  if (lastPrice && (now - lastFetchTime) < FETCH_COOLDOWN) {
-    // Tambah micro-noise agar chart tetap bergerak antar fetch
-    const noise = (Math.random() - 0.5) * 0.0005;
-    return {
-      price: parseFloat((lastPrice + noise).toFixed(6)),
-      volume: lastVolume
-    };
+  // Check phase transition
+  phaseStep++;
+  if (phaseStep >= phaseLength) {
+    const oldPhase = phase;
+    phase = phaseConfig.nextPhase;
+    phaseStep = 0;
+    phaseLength = PHASES[phase].minSteps + 
+      Math.floor(Math.random() * (PHASES[phase].maxSteps - PHASES[phase].minSteps + 1));
+    cycleCount++;
   }
-
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-    
-    const res = await fetch(
-      'https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true',
-      { signal: controller.signal }
-    );
-    clearTimeout(timeout);
-    
-    if (!res.ok) throw new Error(`CoinGecko returned ${res.status}`);
-    
-    const data = await res.json();
-    const price = data.stellar?.usd;
-    const volume = data.stellar?.usd_24h_vol || 0;
-    
-    if (price) {
-      lastPrice = price;
-      lastVolume = Math.floor(volume);
-      lastFetchTime = now;
-      console.log(`   [PRICE] CoinGecko: $${price}`);
-      return { price, volume: Math.floor(volume) };
-    }
-    
-    throw new Error('No price in response');
-  } catch (err) {
-    console.log(`   [PRICE] CoinGecko unavailable (${err.message}), using cache: $${lastPrice || 'none'}`);
-    
-    // Fallback: jika belum pernah fetch, pakai harga default
-    if (!lastPrice) {
-      lastPrice = 0.14; // Approximate XLM price
-      lastVolume = 150000000;
-    }
-    
-    // Micro-noise agar tidak flat
-    const noise = (Math.random() - 0.5) * 0.001;
-    return {
-      price: parseFloat((lastPrice + noise).toFixed(6)),
-      volume: lastVolume
-    };
-  }
-}
-
-/**
- * seedHistory()
- * Fetch 20 data point historis dari CoinGecko untuk mengisi history awal.
- * Dipanggil sekali saat server start.
- */
-async function seedHistory() {
-  try {
-    const res = await fetch(
-      'https://api.coingecko.com/api/v3/coins/stellar/market_chart?vs_currency=usd&days=1&interval=hourly'
-    );
-    
-    if (!res.ok) return;
-    
-    const data = await res.json();
-    const prices = data.prices || [];
-    
-    // Ambil 20 data point terakhir
-    const recent = prices.slice(-20);
-    for (const [, price] of recent) {
-      priceHistory.push(parseFloat(price.toFixed(6)));
-      volumeHistory.push(Math.floor(100000 + Math.random() * 200000));
-    }
-    
-    if (recent.length > 0) {
-      lastPrice = recent[recent.length - 1][1];
-      console.log(`   [PRICE] Seeded ${recent.length} historical prices from CoinGecko`);
-    }
-  } catch (err) {
-    console.log(`   [PRICE] Could not seed history: ${err.message}`);
-  }
+  
+  // ═══ Price Movement ═══
+  
+  // 1. Trend component: drift berdasarkan phase
+  const trendForce = phaseConfig.trend * phaseConfig.volatility;
+  
+  // 2. Noise component: random walk
+  const noise = (Math.random() - 0.5) * 2 * phaseConfig.volatility;
+  
+  // 3. Mean reversion: tarik kembali ke BASE kalau terlalu jauh
+  const distFromBase = currentPrice - BASE_PRICE;
+  const meanReversion = -distFromBase * 0.03;
+  
+  // 4. Momentum (slight autocorrelation untuk realism)  
+  trend = trend * 0.7 + (trendForce + noise) * 0.3;
+  
+  // 5. Combine all forces
+  const priceChange = trend + meanReversion + noise * 0.5;
+  currentPrice += priceChange;
+  
+  // 6. Hard bounds
+  currentPrice = Math.max(MIN_PRICE, Math.min(MAX_PRICE, currentPrice));
+  currentPrice = parseFloat(currentPrice.toFixed(6));
+  
+  // 7. Volume (higher during breakout/correction)
+  const baseVol = phaseConfig.volume;
+  const volNoise = Math.floor(Math.random() * baseVol * 0.5);
+  const volume = baseVol + volNoise;
+  
+  return { price: currentPrice, volume };
 }
 
 /**
  * getMarketData()
- * Return complete market data snapshot dengan harga real.
- * 
- * PENJELASAN FIELDS:
- * - pair: pasangan trading (XLM/USDC)
- * - price: harga REAL dari CoinGecko
- * - high/low: harga tertinggi/terendah dari history
- * - volume: volume trading real
- * - change_pct: perubahan % dari harga sebelumnya
- * - history: array 20 harga terakhir (untuk EMA, RSI, BB, VWAP)
- * - source: 'coingecko' — bukan simulasi!
+ * Return complete market data snapshot.
  */
-export async function getMarketData() {
-  const { price, volume } = await fetchRealPrice();
+export function getMarketData() {
+  const { price, volume } = generatePrice();
   
   // Update history (max 20 entries)
   priceHistory.push(price);
@@ -157,21 +169,22 @@ export async function getMarketData() {
     history: [...priceHistory],
     volume_history: [...volumeHistory],
     timestamp: new Date().toISOString(),
-    source: 'coingecko',
-    data_type: 'real'
+    phase,
+    cycle: cycleCount
   };
 }
 
 /**
  * resetEngine()
- * Reset engine (untuk testing).
  */
 export function resetEngine() {
+  currentPrice = BASE_PRICE;
+  trend = 0;
+  volatility = 0.002;
+  phase = 'ACCUMULATION';
+  phaseStep = 0;
+  phaseLength = 8;
+  cycleCount = 0;
   priceHistory.length = 0;
   volumeHistory.length = 0;
-  lastPrice = null;
-  lastFetchTime = 0;
 }
-
-// Seed historical data on import
-seedHistory();
