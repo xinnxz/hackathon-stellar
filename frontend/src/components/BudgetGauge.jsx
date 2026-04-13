@@ -30,7 +30,7 @@ export default function BudgetGauge({ budget = {} }) {
   return (
     <div className="stat-card">
       <div className="card-header">
-        <span className="card-title">🛡️ Intel Budget</span>
+        <span className="card-title">INTEL BUDGET</span>
       </div>
       
       <div className="gauge-container">

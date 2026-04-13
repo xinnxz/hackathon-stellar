@@ -20,7 +20,7 @@ export default function PnLTracker({ pnl = {}, budget = {} }) {
   return (
     <div className="stat-card">
       <div className="card-header">
-        <span className="card-title">📊 P&L</span>
+        <span className="card-title">P&L</span>
         {roi > 0 && (
           <span className="roi-badge positive">
             {roi.toFixed(0)}x ROI

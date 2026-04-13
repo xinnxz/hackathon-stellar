@@ -173,7 +173,7 @@ function App() {
       case 'RISK':
         setMessages(prev => [...prev.slice(-50), {
           role: 'agent',
-          content: `🛡️ Risk: ${event.data.reason}`,
+          content: `[RISK] ${event.data.reason}`,
           timestamp: event.timestamp
         }])
         break
@@ -181,7 +181,7 @@ function App() {
       case 'OPENCLAW_SKILL':
         setMessages(prev => [...prev.slice(-50), {
           role: 'agent',
-          content: `⚡ Skill: ${event.data.skill} executed`,
+          content: `[SKILL] ${event.data.skill} executed`,
           timestamp: event.timestamp
         }])
         break
@@ -220,12 +220,12 @@ function App() {
       {/* HEADER */}
       <header className="header">
         <div className="header-left">
-          <span className="header-logo">⚡ StellarTradeAgent</span>
+          <span className="header-logo">StellarTradeAgent</span>
           <span className={`header-badge ${isRunning ? 'live' : 'idle'}`}>
-            {isRunning ? '● LIVE' : '○ IDLE'}
+            {isRunning ? 'LIVE' : 'IDLE'}
           </span>
           <span className={`header-badge ${connected ? 'live' : 'idle'}`}>
-            {connected ? '● Connected' : '○ Offline'}
+            {connected ? 'CONNECTED' : 'OFFLINE'}
           </span>
           {lastUpdate && (
             <span className="header-badge" style={{opacity: 0.5, fontSize: '0.7rem'}}>
@@ -238,9 +238,9 @@ function App() {
             {balances.publicKey ? `${balances.publicKey.substring(0, 6)}...${balances.publicKey.slice(-4)}` : 'No wallet'}
           </span>
           {!isRunning ? (
-            <button className="btn btn-start" onClick={startTrading}>▶ Start</button>
+            <button className="btn btn-start" onClick={startTrading}>Start Trading</button>
           ) : (
-            <button className="btn btn-stop" onClick={stopTrading}>⏸ Stop</button>
+            <button className="btn btn-stop" onClick={stopTrading}>Stop Trading</button>
           )}
         </div>
       </header>
@@ -260,9 +260,9 @@ function App() {
           {/* Row 2: Pipeline */}
           <div className="card span-full">
             <div className="card-header">
-              <span className="card-title">🔄 Decision Pipeline</span>
+              <span className="card-title">DECISION PIPELINE</span>
               <span style={{fontSize: '0.7rem', opacity: 0.5}}>
-                {priceHistory.length} polls | {trades.length} trades
+                {priceHistory.length} sequence | {trades.length} executions
               </span>
             </div>
             <PipelineViz pipeline={pipeline} />

@@ -95,14 +95,14 @@ export class Agent {
    */
   async runCycle() {
     if (this.isCycleRunning) {
-      console.log('   ⏳ Previous cycle still running, skipping...');
+      console.log('   [SKIP] Previous cycle still running...');
       return;
     }
 
     this.isCycleRunning = true;
     this.cycleCount++;
     const cycleId = this.cycleCount;
-    console.log(`\n🔄 ══════ CYCLE ${cycleId} ══════`);
+    console.log(`\n[CYCLE] ====== CYCLE ${cycleId} ======`);
 
     try {
       // ═══ STEP 1: WALLET CHECK ═══
@@ -115,7 +115,7 @@ export class Agent {
         this.broadcast('STATUS', { 
           balances: { xlm: wallet.xlm, usdc: wallet.usdc, publicKey: wallet.publicKey }
         });
-        console.log(`   💰 Wallet: ${wallet.xlm?.toFixed(2)} XLM`);
+        console.log(`   [WALLET] Balance: ${wallet.xlm?.toFixed(2)} XLM`);
       }
       this.broadcast('PIPELINE', { step: 1, name: 'Wallet Check', status: 'done' });
 
@@ -139,9 +139,9 @@ export class Agent {
           cost: 0.01,
           txHash: price.payment?.txHash
         });
-        console.log(`   📊 Price: $${price.price} | MPP TX: ${price.payment?.txHash?.substring(0, 12)}...`);
+        console.log(`   [PRICE] $${price.price} | MPP TX: ${price.payment?.txHash?.substring(0, 12)}...`);
       } else {
-        console.log(`   ❌ MPP poll failed: ${price.error}`);
+        console.log(`   [ERROR] MPP poll failed: ${price.error}`);
         this.broadcast('PIPELINE', { step: 2, name: 'Poll Price', status: 'error' });
         this.isCycleRunning = false;
         return;
@@ -158,7 +158,7 @@ export class Agent {
           indicators: analysis.indicators,
           confluence: analysis.confluence
         });
-        console.log(`   🧠 Confluence: ${analysis.confluence?.signal} (${analysis.confluence?.confidence ? (analysis.confluence.confidence * 100).toFixed(0) : 0}%)`);
+        console.log(`   [ANALYSIS] Confluence: ${analysis.confluence?.signal} (${analysis.confluence?.confidence ? (analysis.confluence.confidence * 100).toFixed(0) : 0}%)`);
       }
       this.broadcast('PIPELINE', { step: 3, name: 'Technical Analysis', status: 'done' });
 
@@ -175,7 +175,7 @@ export class Agent {
             cost: 0.05,
             txHash: intel.payment?.txHash
           });
-          console.log(`   🌐 x402 Intel: ${intel.intel?.sentiment} | TX: ${intel.payment?.txHash?.substring(0, 12) || 'fallback'}...`);
+          console.log(`   [INTEL] x402: ${intel.intel?.sentiment} | TX: ${intel.payment?.txHash?.substring(0, 12) || 'fallback'}...`);
         }
         this.broadcast('PIPELINE', { step: 4, name: 'x402 Intel', status: 'done' });
       } else {
@@ -199,9 +199,9 @@ export class Agent {
             pnlPercent: trade.pnlPercent,
             txHash: trade.txHash
           });
-          console.log(`   📈 ${trade.action} ${trade.amount} XLM @ $${trade.price} | TX: ${trade.txHash?.substring(0, 12)}...`);
+          console.log(`   [TRADE] ${trade.action} ${trade.amount} XLM @ $${trade.price} | TX: ${trade.txHash?.substring(0, 12)}...`);
         } else {
-          console.log(`   ⚠️ Trade: ${trade.error}`);
+          console.log(`   [WARN] Trade: ${trade.error}`);
         }
         this.broadcast('PIPELINE', { step: 5, name: `Execute ${signal}`, status: trade.success ? 'done' : 'error' });
       } else {
@@ -210,7 +210,7 @@ export class Agent {
           role: 'agent', 
           content: `📊 Cycle #${cycleId}: HOLD (confidence ${(confidence * 100).toFixed(0)}%) — ${analysis.confluence?.reason || 'no consensus'}`
         });
-        console.log(`   ⏸️ HOLD — confidence ${(confidence * 100).toFixed(0)}%`);
+        console.log(`   [HOLD] confidence ${(confidence * 100).toFixed(0)}%`);
       }
 
       // ═══ STEP 6: REPORT ═══
@@ -218,7 +218,7 @@ export class Agent {
       this.lastCycleResult = { cycleId, signal, confidence, price: price.price };
 
     } catch (error) {
-      console.error(`   ❌ Cycle ${cycleId} error:`, error.message);
+      console.error(`   [ERROR] Cycle ${cycleId} error:`, error.message);
       this.broadcast('CHAT', { role: 'agent', content: `❌ Cycle error: ${error.message}` });
     }
 
@@ -232,7 +232,7 @@ export class Agent {
   start(intervalMs = 30000) {
     if (this.isRunning) return;
     this.isRunning = true;
-    console.log(`🚀 Agent started — cycle every ${intervalMs / 1000}s`);
+    console.log(`[SYSTEM] Agent started - cycle every ${intervalMs / 1000}s`);
     this.broadcast('CHAT', { role: 'agent', content: `🚀 Autonomous trading started! Cycling every ${intervalMs / 1000}s...` });
 
     // First cycle immediately
@@ -250,7 +250,7 @@ export class Agent {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
-    console.log('⏸️ Agent stopped');
+    console.log('[SYSTEM] Agent stopped');
     this.broadcast('CHAT', { role: 'agent', content: `⏸️ Trading stopped. ${this.cycleCount} cycles completed.` });
   }
 

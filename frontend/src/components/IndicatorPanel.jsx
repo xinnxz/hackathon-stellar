@@ -28,7 +28,7 @@ export default function IndicatorPanel({ indicators, confluence }) {
   return (
     <div className="card">
       <div className="card-header">
-        <span className="card-title">📈 Indicators</span>
+        <span className="card-title">INDICATORS</span>
         <span className={`indicator-signal ${conf.signal.toLowerCase()}`} style={{ fontSize: '0.8rem' }}>
           {conf.signal}
         </span>
@@ -39,7 +39,7 @@ export default function IndicatorPanel({ indicators, confluence }) {
           <div key={ind.key} className={`indicator-card ${ind.signal.toLowerCase()}`}>
             <div className="indicator-name">{ind.name}</div>
             <div className={`indicator-signal ${ind.signal.toLowerCase()}`}>
-              {ind.signal === 'BUY' ? '▲' : ind.signal === 'SELL' ? '▼' : '●'} {ind.signal}
+              {ind.signal}
               {ind.value !== undefined && typeof ind.value === 'number' && (
                 <span style={{ fontSize: '0.7rem', fontWeight: 400, marginLeft: '4px' }}>
                   ({ind.value})

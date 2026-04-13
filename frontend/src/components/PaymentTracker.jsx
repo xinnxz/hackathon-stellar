@@ -31,7 +31,7 @@ export default function PaymentTracker({ payments = [] }) {
   return (
     <div className="card">
       <div className="card-header">
-        <span className="card-title">📋 Transaction Ledger</span>
+        <span className="card-title">TRANSACTION LEDGER</span>
         <span className="text-muted" style={{ fontSize: '0.6rem' }}>
           {txCount} on-chain TXs
         </span>
@@ -47,11 +47,7 @@ export default function PaymentTracker({ payments = [] }) {
           <div key={i} className="log-item" style={{ alignItems: 'flex-start' }}>
             {/* Protocol badge */}
             <span className={`log-badge ${p.type.toLowerCase()}`}>
-              {p.type === 'MPP' && '📊'}
-              {p.type === 'x402' && '🌐'}
-              {p.type === 'SDEX' && '📈'}
-              {p.type === 'SELL' && '📉'}
-              {' '}{p.type}
+              {p.type}
             </span>
 
             {/* Details column */}
@@ -76,7 +72,7 @@ export default function PaymentTracker({ payments = [] }) {
                   rel="noopener noreferrer"
                   className="tx-link"
                 >
-                  TX: {p.txHash.substring(0, 10)}...{p.txHash.slice(-4)} ↗
+                  TX: {p.txHash.substring(0, 10)}...{p.txHash.slice(-4)} (view)
                 </a>
               )}
             </div>
@@ -88,7 +84,7 @@ export default function PaymentTracker({ payments = [] }) {
                 {p.pnl >= 0 ? '+' : ''}${p.pnl.toFixed(2)}
               </span>
             ) : (
-              <span style={{ color: 'var(--accent-green)', fontSize: '0.6rem', flexShrink: 0 }}>✓</span>
+              <span style={{ color: 'var(--accent-green)', fontSize: '0.6rem', flexShrink: 0, fontWeight: 700 }}>[OK]</span>
             )}
           </div>
         ))}

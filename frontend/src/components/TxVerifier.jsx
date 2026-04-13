@@ -81,7 +81,7 @@ export default function TxVerifier({ payments = [], trades = [] }) {
   return (
     <div className="card">
       <div className="card-header">
-        <span className="card-title">🔗 TX Verifier</span>
+        <span className="card-title">TX VERIFIER</span>
         <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)' }}>
           Horizon API
         </span>
@@ -93,11 +93,11 @@ export default function TxVerifier({ payments = [], trades = [] }) {
         </div>
       ) : loading ? (
         <div style={{ textAlign: 'center', color: 'var(--accent-blue)', fontSize: '0.7rem', padding: '15px' }}>
-          ⏳ Fetching from Horizon...
+          [LOADING] Fetching from Horizon...
         </div>
       ) : error ? (
         <div style={{ textAlign: 'center', color: 'var(--accent-red)', fontSize: '0.7rem', padding: '15px' }}>
-          ❌ {error}
+          ERROR: {error}
         </div>
       ) : txData ? (
         <div style={{ fontSize: '0.65rem' }}>
@@ -112,7 +112,7 @@ export default function TxVerifier({ payments = [], trades = [] }) {
             marginBottom: '6px'
           }}>
             <span style={{ fontWeight: 600, color: txData.successful ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-              {txData.successful ? '✅ SUCCESS' : '❌ FAILED'}
+              {txData.successful ? 'SUCCESS' : 'FAILED'}
             </span>
             <span style={{ 
               fontSize: '0.55rem', 
@@ -144,7 +144,7 @@ export default function TxVerifier({ payments = [], trades = [] }) {
               borderRadius: 'var(--radius-sm)'
             }}>
               <div style={{ fontSize: '0.5rem', color: 'var(--accent-gold)', textTransform: 'uppercase', fontWeight: 600 }}>
-                📝 Memo (AI Reasoning)
+                MEMO (AI REASONING)
               </div>
               <div style={{ 
                 fontFamily: 'var(--font-mono)', 
@@ -167,7 +167,7 @@ export default function TxVerifier({ payments = [], trades = [] }) {
               className="tx-link"
               style={{ fontSize: '0.55rem' }}
             >
-              🔍 {txData.hash.substring(0, 16)}...{txData.hash.slice(-6)} ↗
+              {txData.hash.substring(0, 16)}...{txData.hash.slice(-6)} (view)
             </a>
           </div>
         </div>

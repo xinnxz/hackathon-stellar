@@ -41,9 +41,9 @@ if (AGENT_SECRET && AGENT_SECRET !== 'S...') {
     config: { mppServerUrl: MPP_URL }
   });
 
-  console.log(`🔑 Agent wallet: ${agentPublicKey}`);
+  console.log(`[KEY] Agent wallet: ${agentPublicKey}`);
 } else {
-  console.log('⚠️  No AGENT_STELLAR_SECRET set — running in demo mode');
+  console.log('[WARN] No AGENT_STELLAR_SECRET set - running in demo mode');
 }
 
 // ═══════════════════════════════════
@@ -310,16 +310,16 @@ app.post('/api/openclaw-webhook', (req, res) => {
 // ═══════════════════════════════════
 app.listen(PORT, () => {
   console.log('');
-  console.log('🏦 ════════════════════════════════════════');
+  console.log('========================================');
   console.log('   StellarTradeAgent Server');
-  console.log('════════════════════════════════════════');
+  console.log('========================================');
   console.log(`   Port:       ${PORT}`);
   console.log(`   MPP Server: ${MPP_URL}`);
   console.log(`   Horizon:    ${HORIZON_URL}`);
   console.log(`   Budget:     ${process.env.AGENT_BUDGET_USDC || '1.00'} USDC`);
-  console.log(`   Agent:      ${agent ? '✅ Ready' : '⚠️ No wallet'}`);
-  console.log('════════════════════════════════════════');
+  console.log(`   Agent:      ${agent ? 'READY' : 'NO WALLET'}`);
+  console.log('========================================');
   console.log('   API:    http://localhost:' + PORT);
   console.log('   SSE:    http://localhost:' + PORT + '/api/events');
-  console.log('════════════════════════════════════════\n');
+  console.log('========================================\n');
 });

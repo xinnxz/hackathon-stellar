@@ -44,7 +44,7 @@ export default function WalletCard({ balances = {} }) {
   return (
     <div className="stat-card">
       <div className="card-header">
-        <span className="card-title">💰 Wallets</span>
+        <span className="card-title">WALLETS</span>
         <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)' }}>Dual-Agent</span>
       </div>
 
@@ -60,7 +60,7 @@ export default function WalletCard({ balances = {} }) {
       }}>
         <div>
           <div style={{ fontSize: '0.55rem', color: '#ef4444', fontWeight: 600 }}>
-            🤖 AGENT (Payer)
+            AGENT (Payer)
           </div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
             {xlm.toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -75,10 +75,10 @@ export default function WalletCard({ balances = {} }) {
               rel="noopener noreferrer"
               style={{ fontSize: '0.5rem', color: 'var(--accent-blue)', textDecoration: 'none' }}
             >
-              {publicKey.substring(0, 4)}...{publicKey.slice(-4)} ↗
+              {publicKey.substring(0, 4)}...{publicKey.slice(-4)} (view)
             </a>
           )}
-          <div style={{ fontSize: '0.55rem', color: '#ef4444', marginTop: '2px' }}>▼ paying</div>
+          <div style={{ fontSize: '0.45rem', color: '#ef4444', marginTop: '2px', fontWeight: 700, letterSpacing: '0.5px' }}>OUTGOING</div>
         </div>
       </div>
 
@@ -93,7 +93,7 @@ export default function WalletCard({ balances = {} }) {
       }}>
         <div>
           <div style={{ fontSize: '0.55rem', color: '#10b981', fontWeight: 600 }}>
-            🏦 PROVIDER (Earner)
+            PROVIDER (Earner)
           </div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
             {provider
@@ -110,10 +110,10 @@ export default function WalletCard({ balances = {} }) {
               rel="noopener noreferrer"
               style={{ fontSize: '0.5rem', color: 'var(--accent-blue)', textDecoration: 'none' }}
             >
-              {provider.publicKey.substring(0, 4)}...{provider.publicKey.slice(-4)} ↗
+              {provider.publicKey.substring(0, 4)}...{provider.publicKey.slice(-4)} (view)
             </a>
           )}
-          <div style={{ fontSize: '0.55rem', color: '#10b981', marginTop: '2px' }}>▲ earning</div>
+          <div style={{ fontSize: '0.45rem', color: '#10b981', marginTop: '2px', fontWeight: 700, letterSpacing: '0.5px' }}>INCOMING</div>
         </div>
       </div>
 
@@ -127,7 +127,7 @@ export default function WalletCard({ balances = {} }) {
         background: 'rgba(255,255,255,0.02)',
         borderRadius: '4px'
       }}>
-        Agent → 💸 XLM → Provider (on-chain)
+        Agent -{'>'} XLM -{'>'} Provider (on-chain)
       </div>
     </div>
   )

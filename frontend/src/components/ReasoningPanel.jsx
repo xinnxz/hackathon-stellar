@@ -33,19 +33,17 @@ export default function ReasoningPanel({
     : signal === 'SELL' ? 'var(--accent-red)' 
     : 'var(--text-secondary)'
 
-  const signalEmoji = signal === 'BUY' ? '📈' : signal === 'SELL' ? '📉' : '⏸'
-
   return (
     <div className="card span-2">
       <div className="card-header">
-        <span className="card-title">🧠 Agent Reasoning</span>
+        <span className="card-title">AGENT REASONING</span>
         <span style={{ 
           fontSize: '0.7rem', 
           fontWeight: 700, 
           color: signalColor,
           fontFamily: 'var(--font-mono)'
         }}>
-          {signalEmoji} {signal}
+          {signal}
         </span>
       </div>
 
@@ -84,7 +82,7 @@ export default function ReasoningPanel({
                       color,
                       fontFamily: 'var(--font-mono)'
                     }}>
-                      {sig === 'BUY' ? '📈' : sig === 'SELL' ? '📉' : '⏸'} {sig}
+                      {sig}
                     </div>
                     {data.value !== null && data.value !== undefined && (
                       <div style={{ fontSize: '0.5rem', color: 'var(--text-secondary)' }}>
@@ -164,7 +162,7 @@ export default function ReasoningPanel({
             marginBottom: '6px'
           }}>
             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: signalColor, fontFamily: 'var(--font-mono)' }}>
-              {signalEmoji} {signal}
+              {signal}
             </div>
             <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
               {confluence?.reason || 'Waiting...'}
@@ -193,7 +191,7 @@ export default function ReasoningPanel({
                 className="tx-link"
                 style={{ marginTop: '2px', display: 'inline-block' }}
               >
-                TX: {latestTrade.txHash.substring(0, 12)}... ↗
+                TX: {latestTrade.txHash.substring(0, 12)}... (view)
               </a>
             </div>
           )}
@@ -209,9 +207,9 @@ export default function ReasoningPanel({
               Cycle Cost
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem' }}>
-              <span style={{ color: 'var(--accent-blue)' }}>📊 MPP: 0.05 XLM</span>
+              <span style={{ color: 'var(--accent-blue)' }}>MPP: 0.05 XLM</span>
               <span style={{ color: pipeline[4]?.status === 'skip' ? 'var(--text-muted)' : 'var(--accent-purple)' }}>
-                🌐 x402: {pipeline[4]?.status === 'skip' ? 'skipped' : '0.10 XLM'}
+                x402: {pipeline[4]?.status === 'skip' ? 'skipped' : '0.10 XLM'}
               </span>
             </div>
             {budget && (

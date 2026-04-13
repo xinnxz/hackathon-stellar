@@ -39,7 +39,7 @@ export default function TradingChart({ priceHistory = [] }) {
   return (
     <div className="card">
       <div className="card-header">
-        <span className="card-title">📈 XLM/USDC Price</span>
+        <span className="card-title">XLM/USDC PRICE</span>
         {priceHistory.length > 0 && (
           <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--accent-blue)' }}>
             ${priceHistory[priceHistory.length - 1]?.price?.toFixed(4)}

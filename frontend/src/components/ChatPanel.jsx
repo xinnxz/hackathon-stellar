@@ -26,7 +26,7 @@ export default function ChatPanel({ messages = [], onSend }) {
 
   return (
     <div className="left-panel">
-      <div className="chat-header">💬 Agent Chat</div>
+      <div className="chat-header">AGENT LOGS</div>
       
       <div className="chat-messages">
         {messages.length === 0 && (

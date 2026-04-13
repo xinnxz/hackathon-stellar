@@ -1,0 +1,136 @@
+# ⚡ StellarTradeAgent: Autonomous Machine-to-Machine Commerce
+
+> **An OpenClaw-inspired AI Agent that PAYS for market intelligence (via x402) and realtime data (via MPP), analyzing and trading autonomously on the Stellar SDEX.**
+
+## 🎯 Executive Summary
+Most Web3 AI bots merely simulate payments and trades. **StellarTradeAgent** does it for real. Designed specifically for the **Stellar AI Agents Hackathon**, this project demonstrates true Machine-to-Machine (M2M) commerce by featuring an autonomous AI that manages its own budget, adheres strictly to Web3 payment protocols (HTTP 402), and embeds its reasoning directly into on-chain transaction memos.
+
+### 🏆 Key Differentiators 
+- **100% Official SDK Compliance**: Fully integrates `@x402/express`, `@stellar/mpp`, and `mppx` without relying on custom payment wrappers.
+- **Soroban SAC Settlement**: Uses USDC Testnet Smart Asset Contracts instead of native XLM for settlements.
+- **On-Chain AI Transparency**: The agent's decision logic (e.g., `BUY:c60:BV:0.1126`) is permanently auditable via Stellar memos.
+- **Dual-Protocol Operations**: Operates both **MPP Charge** (for continuous data polling) and **x402** (for premium intelligence) seamlessly in a single pipeline.
+- **Visual Observatory**: A React-based command center provides real-time SSE (Server-Sent Events) feedback of the agent's operations and budget.
+
+---
+
+## 🏗️ System Architecture
+
+The architecture consists of a highly decoupled, modular environment where the Trading Agent interacts with independent external service providers.
+
+```mermaid
+graph TD
+    subgraph Market Data Provider
+        P1[MPP Server :3002] -- "@stellar/mpp" --> SAC[Soroban SAC USDC]
+    end
+    
+    subgraph Intelligence Provider
+        P2[x402 Server :3003] -- "@x402/express" --> XF[Coinbase Facilitator]
+    end
+
+    subgraph Agent Core
+        A[Agent Orchestrator :3000]
+        SK1[Skill: Poll Price] --> P1
+        SK2[Skill: Get Intel] --> P2
+        SK3[Skill: Analyze]
+        SK4[Skill: Execute Trade] -- "SDEX" --> ST[Stellar Testnet]
+        
+        A --> SK1
+        A --> SK2
+        A --> SK3
+        A --> SK4
+    end
+
+    subgraph UI
+        D[React Dashboard :5173] -. "SSE Stream" .-> A
+    end
+```
+
+### 1. The Autonomous Loop
+The orchestration server (Agent API) runs an endless, self-governing cycle every 15 seconds:
+1. **Wallet Check**: Measures available USDC budget and XLM trading capital.
+2. **MPP Price Poll**: Pays $0.01 USDC to the Market Data provider to fetch real-time XLM/USDC candlestick data.
+3. **Indicator Analysis**: Evaluates 4 technical indicators (EMA Cross, RSI, Bollinger Bands, VWAP) against the history cache.
+4. **x402 Premium Intel**: If indicators are unstable or confluence is needed, pays $0.05 USDC to the Intel Provider for sentiment.
+5. **Trade Execution**: If confidence is ≥75%, issues `manageBuyOffer` or `manageSellOffer` directly to Stellar SDEX.
+6. **Reporting**: Streams all activities via Server-Sent Events to the frontend dashboard.
+
+---
+
+## 🧠 The 5 OpenClaw Agentic Skills
+Rather than a monolith, the agent's brain is separated into 5 independent executable scripts adhering to OpenClaw standards. Each runs as a distinct Node process.
+
+| Skill | Cost / Protocol | Action / Description |
+|-------|-----------------|----------------------|
+| `/stellar-wallet` | Free | Queries Horizon for exact Agent and Provider USDC/XLM balances. |
+| `/stellar-poll-price` | `$0.01` (MPP SDK) | Fetches the current price matrix. Intercepts HTTP 402 and auto-signs Soroban transaction via `mppx/client`. |
+| `/stellar-analyze` | Free | In-memory calculation evaluating momentum, trend, and volume. Calculates a 0-100% "Confluence Score". |
+| `/stellar-x402-intel` | `$0.05` (x402 SDK) | Hits premium endpoint. Responds to base64 payment challenge via `@x402/fetch` and settles via `x402.org/facilitator`. |
+| `/stellar-trade` | Network Gas | Executes limit orders on the SDEX and calculates P&L. Writes AI reasoning to on-chain memo. |
+
+---
+
+## 🔍 On-Chain Auditability
+Trustless execution means humans shouldn't have to trust local server logs.
+
+When the agent trades, it writes a highly compressed string to the `Memo` field of the Stellar Transaction:
+**Example**: `BUY:c60:BV:0.1126`
+- `BUY`: Action taken.
+- `c60`: Confidence Level (60%).
+- `BV`: Indicators that agreed (**B**ollinger Bands, **V**WAP).
+- `0.1126`: Entry price parameter.
+
+**Why it matters:** Judges and users can click the TX hash on `stellar.expert` and explicitly read the agent's exact decision parameters permanently stored on the ledger.
+
+---
+
+## 💻 Tech Stack & SDK Mapping
+This project strictly adheres to the provided hackathon SDKs.
+
+- **Frontend**: React 19, Vite, Tailwind CSS, Recharts.
+- **Backend**: Node.js, Express, SSE.
+- **Network**: Stellar Testnet (Horizon API & Soroban RPC).
+- **Core SDK**: `@stellar/stellar-sdk ^15.0.0`
+- **MPP Implementation**: `@stellar/mpp`, `mppx` (Charge mode, Server & Client).
+- **x402 Implementation**: `@x402/core`, `@x402/express`, `@x402/stellar`, `@x402/fetch`.
+- **Payment Settlement**: **USDC Testnet** via **Soroban Smart Asset Contracts (SAC)**.
+
+---
+
+## 🛡️ Risk Management Engine
+The agent will never run out of control. It executes safe M2M commerce bounded by strict constraints:
+1. **Budget Cap**: Agent halts all intel/price polling if the 1.00 USDC micro-payment budget is exhausted.
+2. **Max Drawdown**: SDEX Trading is physically halted if cumulative P&L exceeds -15%.
+3. **Hard Cooldown**: Minimum 60-second delay between executed trades to prevent wash trading and gas bleeding.
+4. **Position Limits**: The agent calculates max exposure and will not risk 100% of portfolio health on a single trade.
+
+---
+
+## 🚀 Quick Start / Setup Instruction
+
+**1. Clone and Install**
+```bash
+git clone https://github.com/xinnxz/hackathon-stellar.git
+cd hackathon-stellar
+npm run install:all
+```
+
+**2. Fund Wallets & Establish Trustlines**
+```bash
+npm run setup      # Generates dual keypairs & calls Friendbot
+npm run trustline  # Establishes USDC Testnet SAC trustlines
+npm run seed       # Seeds initial price history buffer
+```
+
+**3. Run the Fleet**
+```bash
+npm run demo
+```
+*This `concurrently` command spins up:*
+- `[MPP]` Price Server on Port 3002
+- `[x402]` Intel Server on Port 3003
+- `[API]` Agent Orchestrator on Port 3000
+- `[UI]` React Dashboard on Port 5173
+
+**4. Interact**
+Open `http://localhost:5173`. Click the **▶ Start** button to unleash the agent. Watch the CLI or dashboard ledger as it autonomously negotiates 402 protocols and settles trades on-chain.

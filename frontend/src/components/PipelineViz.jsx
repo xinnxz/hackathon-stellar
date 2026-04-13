@@ -18,12 +18,12 @@
  * - pending = abu-abu
  */
 const STEPS = [
-  { id: 1, name: 'Wallet', icon: '💰', cost: 'free' },
-  { id: 2, name: 'Poll MPP', icon: '📊', cost: '0.05 XLM' },
-  { id: 3, name: 'Analyze', icon: '🧠', cost: 'free' },
-  { id: 4, name: 'x402 Intel', icon: '🌐', cost: '0.1 XLM' },
-  { id: 5, name: 'Trade', icon: '📈', cost: 'gas' },
-  { id: 6, name: 'Report', icon: '📋', cost: 'free' }
+  { id: 1, name: 'Wallet', icon: '1', cost: 'free' },
+  { id: 2, name: 'Poll MPP', icon: '2', cost: '0.05 XLM' },
+  { id: 3, name: 'Analyze', icon: '3', cost: 'free' },
+  { id: 4, name: 'x402 Intel', icon: '4', cost: '0.1 XLM' },
+  { id: 5, name: 'Trade', icon: '5', cost: 'gas' },
+  { id: 6, name: 'Report', icon: '6', cost: 'free' }
 ]
 
 const STATUS_STYLES = {
@@ -91,10 +91,10 @@ export default function PipelineViz({ pipeline = {} }) {
                     ...style
                   }}
                 >
-                  {status === 'done' && '✓'}
-                  {status === 'running' && '•'}
-                  {status === 'error' && '✗'}
-                  {status === 'skip' && '−'}
+                  {status === 'done' && 'OK'}
+                  {status === 'running' && '...'}
+                  {status === 'error' && 'ERR'}
+                  {status === 'skip' && 'SKIP'}
                   {status === 'pending' && step.icon}
                 </div>
                 <div style={{

@@ -1,162 +1,234 @@
 {
-  "total": 1,
-  "spent": 0.34,
-  "remaining": 0.66,
-  "percentUsed": 34,
+  "total": 999999,
+  "spent": 0.62,
+  "remaining": 999998.38,
+  "percentUsed": 0,
   "payments": [
     {
       "type": "MPP",
       "amount": 0.01,
-      "xlmPaid": 0.05,
+      "usdcPaid": 0.01,
       "service": "price-poll",
-      "method": "MPP Charge (real on-chain payment)",
-      "txHash": "0fb5e990ec475420b6019dfad98aa6eb239d0c7b26e292bb30d3387fb1c67d01",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/0fb5e990ec475420b6019dfad98aa6eb239d0c7b26e292bb30d3387fb1c67d01",
-      "memo": "mpp-f3a9b77f",
-      "timestamp": "2026-04-13T18:09:22.901Z"
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:37:33.082Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:37:48.555Z"
     },
     {
       "type": "x402",
       "amount": 0.05,
-      "xlmPaid": 0.1,
+      "usdcPaid": 0.01,
       "service": "market-intel",
-      "method": "x402 (real on-chain payment)",
-      "txHash": "6d3de10eced742665508151615975c04ae333ad099ff453ec9314f4f412efebd",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/6d3de10eced742665508151615975c04ae333ad099ff453ec9314f4f412efebd",
-      "memo": "x402-2a5ad7a6",
-      "timestamp": "2026-04-13T18:11:43.025Z"
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:37:57.929Z"
     },
     {
       "type": "MPP",
       "amount": 0.01,
-      "xlmPaid": 0.05,
+      "usdcPaid": 0.01,
       "service": "price-poll",
-      "method": "MPP Charge (real on-chain payment)",
-      "txHash": "4e7b745f46c888ead03830d633bfc7bdc2450642e6574c7d13d75ab6a9803c39",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/4e7b745f46c888ead03830d633bfc7bdc2450642e6574c7d13d75ab6a9803c39",
-      "memo": "mpp-9787ff0b",
-      "timestamp": "2026-04-13T18:46:21.948Z"
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:38:18.342Z"
     },
     {
       "type": "x402",
       "amount": 0.05,
-      "xlmPaid": 0.1,
+      "usdcPaid": 0.01,
       "service": "market-intel",
-      "method": "x402 (real on-chain payment)",
-      "txHash": "387f89e9a3dc99086fd0b5da82e9fe78257e1f7ae4088cab5d71e512e050efee",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/387f89e9a3dc99086fd0b5da82e9fe78257e1f7ae4088cab5d71e512e050efee",
-      "memo": "x402-a72b1573",
-      "timestamp": "2026-04-13T18:46:26.840Z"
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:38:27.859Z"
     },
     {
       "type": "MPP",
       "amount": 0.01,
-      "xlmPaid": 0.05,
+      "usdcPaid": 0.01,
       "service": "price-poll",
-      "method": "MPP Charge (real on-chain payment)",
-      "txHash": "30ba88fe218086ad4083423d8e429fcd22d7eff0eda56dce8c091248d445380e",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/30ba88fe218086ad4083423d8e429fcd22d7eff0eda56dce8c091248d445380e",
-      "memo": "mpp-76d61d39",
-      "timestamp": "2026-04-13T18:46:37.129Z"
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:38:48.047Z"
     },
     {
       "type": "x402",
       "amount": 0.05,
-      "xlmPaid": 0.1,
+      "usdcPaid": 0.01,
       "service": "market-intel",
-      "method": "x402 (real on-chain payment)",
-      "txHash": "863b34c71dffd8eca3ed748876e96a6f2c59d953f27f33bf9ecc3178d651c76a",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/863b34c71dffd8eca3ed748876e96a6f2c59d953f27f33bf9ecc3178d651c76a",
-      "memo": "x402-6cfa00fd",
-      "timestamp": "2026-04-13T18:46:42.218Z"
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:38:57.275Z"
     },
     {
       "type": "MPP",
       "amount": 0.01,
-      "xlmPaid": 0.05,
+      "usdcPaid": 0.01,
       "service": "price-poll",
-      "method": "MPP Charge (real on-chain payment)",
-      "txHash": "5baf9c0bd4b9e4445a12b67835dc405c4b0bfcb2fc29ebaf8b89eec5e29b53fd",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/5baf9c0bd4b9e4445a12b67835dc405c4b0bfcb2fc29ebaf8b89eec5e29b53fd",
-      "memo": "mpp-525e7d45",
-      "timestamp": "2026-04-13T18:46:51.994Z"
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:39:18.481Z"
     },
     {
       "type": "MPP",
       "amount": 0.01,
-      "xlmPaid": 0.05,
+      "usdcPaid": 0.01,
       "service": "price-poll",
-      "method": "MPP Charge (real on-chain payment)",
-      "txHash": "feb9b260a9503e2e7667f4013c2ed016fd908130040f8db4b509d95493684a77",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/feb9b260a9503e2e7667f4013c2ed016fd908130040f8db4b509d95493684a77",
-      "memo": "mpp-df9b4ba0",
-      "timestamp": "2026-04-13T18:47:06.853Z"
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:39:33.344Z"
     },
     {
       "type": "MPP",
       "amount": 0.01,
-      "xlmPaid": 0.05,
+      "usdcPaid": 0.01,
       "service": "price-poll",
-      "method": "MPP Charge (real on-chain payment)",
-      "txHash": "6b5ee408f900f4366a52597c81275f0790d17ef1b5cb4245009fe6c8206abb9f",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/6b5ee408f900f4366a52597c81275f0790d17ef1b5cb4245009fe6c8206abb9f",
-      "memo": "mpp-58a8c7e4",
-      "timestamp": "2026-04-13T18:47:21.853Z"
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:39:48.431Z"
     },
     {
       "type": "MPP",
       "amount": 0.01,
-      "xlmPaid": 0.05,
+      "usdcPaid": 0.01,
       "service": "price-poll",
-      "method": "MPP Charge (real on-chain payment)",
-      "txHash": "6409c3dcaca19dccbbaf68fc786718ee0aced01f0327e153abb9eb4a0752c38e",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/6409c3dcaca19dccbbaf68fc786718ee0aced01f0327e153abb9eb4a0752c38e",
-      "memo": "mpp-1f4aa381",
-      "timestamp": "2026-04-13T18:47:36.937Z"
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:40:03.243Z"
     },
     {
       "type": "MPP",
       "amount": 0.01,
-      "xlmPaid": 0.05,
+      "usdcPaid": 0.01,
       "service": "price-poll",
-      "method": "MPP Charge (real on-chain payment)",
-      "txHash": "1576130d5922760450bb971f649d0551ac6eb931adfffe6722e3d42363e29f90",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/1576130d5922760450bb971f649d0551ac6eb931adfffe6722e3d42363e29f90",
-      "memo": "mpp-c0d7894c",
-      "timestamp": "2026-04-13T18:47:51.948Z"
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:40:18.311Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:40:33.480Z"
     },
     {
       "type": "x402",
       "amount": 0.05,
-      "xlmPaid": 0.1,
+      "usdcPaid": 0.01,
       "service": "market-intel",
-      "method": "x402 (real on-chain payment)",
-      "txHash": "0070c77c1b7f3bda63bab51318c1967be2e76831eaa13b3df0e8dd34daffac0e",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/0070c77c1b7f3bda63bab51318c1967be2e76831eaa13b3df0e8dd34daffac0e",
-      "memo": "x402-5f7b2c76",
-      "timestamp": "2026-04-13T18:47:56.888Z"
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:40:42.415Z"
     },
     {
       "type": "MPP",
       "amount": 0.01,
-      "xlmPaid": 0.05,
+      "usdcPaid": 0.01,
       "service": "price-poll",
-      "method": "MPP Charge (real on-chain payment)",
-      "txHash": "9964efe037c593baa8702e334b0ef6133a58db74fd87ddd6d8e607b997c6134f",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/9964efe037c593baa8702e334b0ef6133a58db74fd87ddd6d8e607b997c6134f",
-      "memo": "mpp-5867b8f8",
-      "timestamp": "2026-04-13T18:48:06.896Z"
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:41:03.096Z"
     },
     {
       "type": "x402",
       "amount": 0.05,
-      "xlmPaid": 0.1,
+      "usdcPaid": 0.01,
       "service": "market-intel",
-      "method": "x402 (real on-chain payment)",
-      "txHash": "111cc41e532926b987189d4448c7c542a6330621a941120cf26cd1176c92cbd3",
-      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/111cc41e532926b987189d4448c7c542a6330621a941120cf26cd1176c92cbd3",
-      "memo": "x402-110f11b7",
-      "timestamp": "2026-04-13T18:48:11.851Z"
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:41:12.745Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:41:33.207Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:41:42.517Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:42:03.539Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:42:13.026Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:42:33.611Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:42:42.826Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:43:02.938Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:43:12.554Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:43:33.333Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:43:48.614Z"
     }
   ]
 }
