@@ -1,0 +1,31 @@
+{
+  "name": "stellar-trade-agent",
+  "version": "1.0.0",
+  "description": "An OpenClaw-inspired AI trading agent that pays for market intelligence via x402 + MPP and trades autonomously on Stellar SDEX",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "node scripts/setup-wallets.js",
+    "seed": "node scripts/seed-orderbook.js",
+    "server": "node server/index.js",
+    "mpp": "node services/market-data/server.js",
+    "frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run mpp\" \"npm run server\" \"npm run frontend\"",
+    "install:all": "npm install && cd server && npm install && cd ../services/market-data && npm install && cd ../../frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [
+    "stellar",
+    "x402",
+    "mpp",
+    "ai-agent",
+    "trading",
+    "hackathon"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@stellar/stellar-sdk": "^15.0.1"
+  }
+}

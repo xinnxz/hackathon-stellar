@@ -1,0 +1,158 @@
+{
+  "total": 1,
+  "spent": 0.25,
+  "remaining": 0.75,
+  "percentUsed": 25,
+  "payments": [
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:16.558Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:17.580Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:18.487Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:19.399Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:20.321Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:21.240Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:22.153Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:23.071Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:23.978Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:24.897Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:43.019Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:44.180Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:45.289Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:46.390Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:47.497Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:48.592Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:49.685Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:50.782Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:51.890Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:53.006Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:54.103Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:55.211Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:56.318Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:57.426Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "service": "price-poll",
+      "timestamp": "2026-04-10T19:44:58.534Z"
+    }
+  ]
+}

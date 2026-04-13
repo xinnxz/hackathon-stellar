@@ -1,0 +1,23 @@
+{
+  "position": {
+    "side": "SELL",
+    "amount": 100,
+    "entryPrice": 0.168572,
+    "timestamp": "2026-04-10T19:45:57.585Z"
+  },
+  "trades": [
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.168572,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "ee8a97f6e9dcd788c4861da42326ac1b3a78508dbf1970c949bda9f308a1e29f",
+      "timestamp": "2026-04-10T19:45:57.586Z"
+    }
+  ],
+  "totalPnL": 0,
+  "winningTrades": 0,
+  "losingTrades": 0,
+  "lastTradeTime": 1775850357586
+}
