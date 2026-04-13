@@ -167,7 +167,7 @@ export default function TxVerifier({ payments = [], trades = [] }) {
               className="tx-link"
               style={{ fontSize: '0.55rem' }}
             >
-              {txData.hash.substring(0, 16)}...{txData.hash.slice(-6)} (view)
+              {txData.hash.substring(0, 16)}...{txData.hash.slice(-6)} ↗
             </a>
           </div>
         </div>

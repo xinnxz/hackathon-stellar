@@ -20,9 +20,9 @@
 
 // Base price parameters
 const BASE_PRICE = 0.14;      // Harga tengah XLM/USDC
-const AMPLITUDE = 0.03;       // Amplitudo gelombang (±$0.03)
-const CYCLE_LENGTH = 20;      // 20 steps per full cycle
-const NOISE_FACTOR = 0.02;    // Random noise ±2%
+const AMPLITUDE = 0.05;       // Amplitudo gelombang (±$0.05) — lebih besar = lebih banyak trade
+const CYCLE_LENGTH = 12;      // 12 steps per full cycle — lebih cepat = lebih sering sinyal
+const NOISE_FACTOR = 0.04;    // Random noise ±4% — lebih besar = lebih unpredictable
 
 // State
 let step = 0;

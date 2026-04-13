@@ -191,7 +191,7 @@ export default function ReasoningPanel({
                 className="tx-link"
                 style={{ marginTop: '2px', display: 'inline-block' }}
               >
-                TX: {latestTrade.txHash.substring(0, 12)}... (view)
+                TX: {latestTrade.txHash.substring(0, 12)}... ↗
               </a>
             </div>
           )}

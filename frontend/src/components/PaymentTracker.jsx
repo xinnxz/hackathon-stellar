@@ -72,7 +72,7 @@ export default function PaymentTracker({ payments = [] }) {
                   rel="noopener noreferrer"
                   className="tx-link"
                 >
-                  TX: {p.txHash.substring(0, 10)}...{p.txHash.slice(-4)} (view)
+                  TX: {p.txHash.substring(0, 10)}...{p.txHash.slice(-4)} ↗
                 </a>
               )}
             </div>

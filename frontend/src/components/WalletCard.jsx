@@ -75,7 +75,7 @@ export default function WalletCard({ balances = {} }) {
               rel="noopener noreferrer"
               style={{ fontSize: '0.5rem', color: 'var(--accent-blue)', textDecoration: 'none' }}
             >
-              {publicKey.substring(0, 4)}...{publicKey.slice(-4)} (view)
+              {publicKey.substring(0, 4)}...{publicKey.slice(-4)} (↗)
             </a>
           )}
           <div style={{ fontSize: '0.45rem', color: '#ef4444', marginTop: '2px', fontWeight: 700, letterSpacing: '0.5px' }}>OUTGOING</div>
@@ -110,7 +110,7 @@ export default function WalletCard({ balances = {} }) {
               rel="noopener noreferrer"
               style={{ fontSize: '0.5rem', color: 'var(--accent-blue)', textDecoration: 'none' }}
             >
-              {provider.publicKey.substring(0, 4)}...{provider.publicKey.slice(-4)} (view)
+              {provider.publicKey.substring(0, 4)}...{provider.publicKey.slice(-4)} (↗)
             </a>
           )}
           <div style={{ fontSize: '0.45rem', color: '#10b981', marginTop: '2px', fontWeight: 700, letterSpacing: '0.5px' }}>INCOMING</div>

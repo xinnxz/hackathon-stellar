@@ -1,50 +1,7 @@
 {
-  "position": {
-    "side": "SELL",
-    "amount": 30,
-    "entryPrice": 0.137653,
-    "timestamp": "2026-04-13T20:18:25.664Z"
-  },
-  "trades": [
-    {
-      "action": "SELL",
-      "amount": 100,
-      "price": 0.168572,
-      "pnl": null,
-      "pnlPercent": null,
-      "txHash": "ee8a97f6e9dcd788c4861da42326ac1b3a78508dbf1970c949bda9f308a1e29f",
-      "timestamp": "2026-04-10T19:45:57.586Z"
-    },
-    {
-      "action": "SELL",
-      "amount": 50,
-      "price": 0.157827,
-      "pnl": null,
-      "pnlPercent": null,
-      "txHash": "90bfd1bb895f9b10f031a6e7016e9a90b2efb445274c8360ef17ccddcbc94e2d",
-      "timestamp": "2026-04-13T18:55:21.592Z"
-    },
-    {
-      "action": "BUY",
-      "amount": 50,
-      "price": 0.112554,
-      "pnl": 2.26365,
-      "pnlPercent": 28.685205953353993,
-      "txHash": "c4b7c9e136e8b89af7569255f3547aa3391d088e39e008f46c1c7abd71b88ac1",
-      "timestamp": "2026-04-13T20:07:14.566Z"
-    },
-    {
-      "action": "SELL",
-      "amount": 30,
-      "price": 0.137653,
-      "pnl": null,
-      "pnlPercent": null,
-      "txHash": "b03d12bb024ba2474abb3df6f6ac8b2783b4b8ef441d1daa5cf37d001cbb08e0",
-      "timestamp": "2026-04-13T20:18:25.665Z"
-    }
-  ],
-  "totalPnL": 2.26365,
-  "winningTrades": 1,
+  "trades": [],
+  "totalPnL": 0,
+  "winningTrades": 0,
   "losingTrades": 0,
-  "lastTradeTime": 1776111505665
+  "lastPosition": null
 }
