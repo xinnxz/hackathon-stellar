@@ -1,38 +1,38 @@
 {
   "success": true,
-  "currentPrice": 0.113386,
-  "dataPoints": 72,
+  "currentPrice": 0.131235,
+  "dataPoints": 87,
   "indicators": {
     "ema": {
       "signal": "SELL",
-      "reason": "Fast EMA below slow by 7.22%",
-      "value": -7.22
+      "reason": "Fast EMA below slow by 2.45%",
+      "value": -2.45
     },
     "rsi": {
-      "signal": "BUY",
-      "reason": "RSI 23.9 — oversold",
-      "value": 23.9
+      "signal": "HOLD",
+      "reason": "RSI 59.3 — neutral",
+      "value": 59.3
     },
     "bb": {
       "signal": "HOLD",
-      "reason": "Price within bands (16%)",
-      "value": 15.6
+      "reason": "Price within bands (40%)",
+      "value": 40.3
     },
     "vwap": {
       "signal": "BUY",
-      "reason": "Price 21.64% below VWAP",
-      "value": -21.64
+      "reason": "Price 9.58% below VWAP",
+      "value": -9.58
     }
   },
   "confluence": {
     "signal": "HOLD",
-    "confidence": 0.5,
+    "confidence": 0.25,
     "votes": {
-      "buy": 2,
+      "buy": 1,
       "sell": 1,
-      "hold": 1
+      "hold": 2
     },
-    "reason": "No consensus: 2B/1S/1H"
+    "reason": "No consensus: 1B/1S/2H"
   },
-  "timestamp": "2026-04-13T20:43:48.708Z"
+  "timestamp": "2026-04-13T20:48:48.512Z"
 }

@@ -1,7 +1,7 @@
 {
   "total": 999999,
-  "spent": 0.62,
-  "remaining": 999998.38,
+  "spent": 1.12,
+  "remaining": 999997.88,
   "percentUsed": 0,
   "payments": [
     {
@@ -229,6 +229,196 @@
       "service": "price-poll",
       "method": "MPP SDK (Soroban SAC USDC)",
       "timestamp": "2026-04-13T20:43:48.614Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:44:03.346Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:44:18.536Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:44:33.705Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:44:48.383Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:45:04.019Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:45:12.796Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:45:33.756Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:45:43.387Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:46:03.576Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:46:12.980Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:46:33.125Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:46:43.160Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:47:03.519Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:47:18.541Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:47:33.323Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:47:48.614Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:48:03.199Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:48:08.415Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:48:18.673Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:48:28.203Z"
+    },
+    {
+      "type": "MPP",
+      "amount": 0.01,
+      "usdcPaid": 0.01,
+      "service": "price-poll",
+      "method": "MPP SDK (Soroban SAC USDC)",
+      "timestamp": "2026-04-13T20:48:48.418Z"
+    },
+    {
+      "type": "x402",
+      "amount": 0.05,
+      "usdcPaid": 0.01,
+      "service": "market-intel",
+      "method": "x402 SDK (Soroban SAC USDC)",
+      "txHash": "settled-via-facilitator",
+      "explorerUrl": "",
+      "timestamp": "2026-04-13T20:48:59.119Z"
     }
   ]
 }
