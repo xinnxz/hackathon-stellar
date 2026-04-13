@@ -58,12 +58,12 @@
   --radius-lg: 14px;
   --radius-xl: 20px;
 
-  /* Shadows & Glows */
+  /* Shadows */
   --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
-  --glow-blue: 0 0 20px rgba(0, 210, 255, 0.15), 0 0 60px rgba(0, 210, 255, 0.05);
-  --glow-green: 0 0 20px rgba(0, 255, 136, 0.15), 0 0 60px rgba(0, 255, 136, 0.05);
-  --glow-red: 0 0 20px rgba(255, 71, 87, 0.15);
-  --glow-purple: 0 0 20px rgba(123, 47, 247, 0.15);
+  --glow-blue: none;
+  --glow-green: none;
+  --glow-red: none;
+  --glow-purple: none;
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -116,31 +116,7 @@
   font-family: var(--font-instrument-serif), 'Instrument Serif', serif;
 }
 
-/* CTA Button */
-.cta {
-  box-shadow: 0 20px 25px rgba(182, 140, 24, 0.3);
-  border-radius: 18px;
-  background-color: #fcc010;
-  display: flex;
-  align-items: flex-start;
-  padding: 17px 30px;
-  font-size: 16px;
-  color: #000;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.cta:hover {
-  transform: translateY(-2px);
-}
-
-.learn-more {
-  position: relative;
-  font-weight: 500;
-  font-family: var(--font-inter, 'Inter', sans-serif);
-  white-space: nowrap;
-}
+/* CTA Button — main styles in Hero.css */
 
 
 /* ═══════════════════════════════════
@@ -341,7 +317,6 @@ body {
 
 .card:hover {
   background: var(--bg-card-hover);
-  box-shadow: var(--glow-blue);
 }
 
 .card-header {
@@ -381,7 +356,7 @@ body {
 }
 
 .stat-card:hover {
-  box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
+  background: var(--bg-card-hover);
 }
 
 .stat-icon {
@@ -485,12 +460,10 @@ body {
 
 .indicator-card.buy {
   border-color: rgba(0, 255, 136, 0.2);
-  box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.03);
 }
 
 .indicator-card.sell {
   border-color: rgba(255, 71, 87, 0.2);
-  box-shadow: inset 0 0 20px rgba(255, 71, 87, 0.03);
 }
 
 .indicator-card.hold {
@@ -569,7 +542,6 @@ body {
 
 .confluence-fill.high {
   background: var(--gradient-green);
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
 }
 
 /* ═══════════════════════════════════
@@ -610,15 +582,12 @@ body {
   border-color: var(--accent-green);
   background: rgba(0, 255, 136, 0.1);
   color: var(--accent-green);
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.2);
 }
 
 .pipeline-dot.active {
   border-color: var(--accent-blue);
   background: rgba(0, 210, 255, 0.1);
   color: var(--accent-blue);
-  box-shadow: 0 0 12px rgba(0, 210, 255, 0.3);
-  animation: pulse 1.5s infinite;
 }
 
 .pipeline-dot.error {
@@ -654,7 +623,6 @@ body {
 
 .pipeline-line.done {
   background: var(--accent-green);
-  box-shadow: 0 0 6px rgba(0, 255, 136, 0.3);
 }
 
 /* ═══════════════════════════════════
@@ -809,12 +777,12 @@ body {
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  50% { opacity: 0.85; }
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 1; }
 }
 
 @keyframes fadeIn {
@@ -836,12 +804,10 @@ body {
 
 .pnl-hero.positive {
   color: var(--accent-green);
-  text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
 }
 
 .pnl-hero.negative {
   color: var(--accent-red);
-  text-shadow: 0 0 30px rgba(255, 71, 87, 0.3);
 }
 
 /* ROI Badge */
@@ -945,12 +911,7 @@ body {
   color: #fff;
 }
 
-/* Live indicator pulse */
-@keyframes livePulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
-  50% { opacity: 0.7; box-shadow: 0 0 15px rgba(0, 255, 136, 0.5); }
-}
-
+/* Live indicator */
 .header-badge.live {
-  animation: livePulse 2s infinite;
+  /* static, no pulse */
 }

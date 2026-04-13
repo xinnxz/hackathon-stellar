@@ -13,16 +13,16 @@ const HeroText = ({ className = "" }) => {
             <div className="div-framer-ge2sl">
                 <div className="div-framer-ge2sl-child" />
                 <div className="div-framer-se4otm">
-                    <div className="senior-healthcare-management">
+                    <div className="agent-badge-label">
                         Stellar Trading Agent
                     </div>
                 </div>
             </div>
-            <div className="empowering-seniors-with-health-container">
-                <span className="empowering-seniors">{`Empowering Traders `}</span>
-                <i className="with-health-insights">with AI Insights</i>
+            <div className="hero-headline-container">
+                <span className="hero-headline-primary">{`Empowering Traders `}</span>
+                <i className="hero-headline-accent">with AI Insights</i>
             </div>
-            <div className="a-comprehensive-healthcare">
+            <div className="hero-subtext">
                 Unified AI platform that aggregates on-chain metrics, executes high-frequency trades, and compounds profits recursively.
             </div>
             <button className="cta" onClick={handleLearnMore}>
@@ -33,3 +33,4 @@ const HeroText = ({ className = "" }) => {
 };
 
 export default HeroText;
+

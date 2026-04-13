@@ -125,17 +125,26 @@
       "pnlPercent": null,
       "txHash": "ff9292bb81a58a2a0debb0d3166643bdd490601e499fa3d43cbbf5f007c3f401",
       "timestamp": "2026-04-13T21:42:59.647Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.157685,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "dcebca7bc4ebfec083e33153e91544860b323c5a1fec015e8eedfa8d7539b9f1",
+      "timestamp": "2026-04-13T22:23:13.543Z"
     }
   ],
   "totalPnL": 0,
   "winningTrades": 0,
   "losingTrades": 0,
   "lastPosition": null,
-  "lastTradeTime": 1776116579647,
+  "lastTradeTime": 1776118993543,
   "position": {
     "side": "SELL",
     "amount": 200,
-    "entryPrice": 0.155307,
-    "timestamp": "2026-04-13T21:42:59.647Z"
+    "entryPrice": 0.157685,
+    "timestamp": "2026-04-13T22:23:13.542Z"
   }
 }
