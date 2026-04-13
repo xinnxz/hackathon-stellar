@@ -8,6 +8,8 @@ import WalletCard from './components/WalletCard'
 import BudgetGauge from './components/BudgetGauge'
 import PaymentTracker from './components/PaymentTracker'
 import TradingChart from './components/TradingChart'
+import ReasoningPanel from './components/ReasoningPanel'
+import TxVerifier from './components/TxVerifier'
 
 const API_URL = 'http://localhost:3000'
 
@@ -266,7 +268,18 @@ function App() {
             <PipelineViz pipeline={pipeline} />
           </div>
 
-          {/* Row 3: Indicators | Chart | Log */}
+          {/* Row 3: Reasoning Panel + TX Verifier */}
+          <ReasoningPanel 
+            indicators={indicators}
+            confluence={confluence}
+            latestPrice={priceHistory.length ? priceHistory[priceHistory.length - 1]?.price : null}
+            latestTrade={trades.length ? trades[trades.length - 1] : null}
+            pipeline={pipeline}
+            budget={budget}
+          />
+          <TxVerifier payments={payments} trades={trades} />
+
+          {/* Row 4: Indicators | Chart | Log */}
           <IndicatorPanel indicators={indicators} confluence={confluence} />
           <TradingChart priceHistory={priceHistory} />
           <PaymentTracker payments={payments} />
