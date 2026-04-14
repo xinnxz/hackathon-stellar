@@ -22,7 +22,7 @@ StellarTradeAgent is an AI-powered trading bot that operates **completely on-cha
 
 ## Demo
 
-> **[Watch the Demo Video](https://youtube.com/your-video-here)**
+> **[Watch the Demo Video](https://www.youtube.com/watch?v=SateXmjnaUU)**
 
 Or run it yourself — takes about 2 minutes:
 
