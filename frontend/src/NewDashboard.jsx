@@ -12,6 +12,7 @@ function NewDashboard() {
         top: 0,
         left: 0,
         zIndex: 9999,
+        backgroundColor: '#0b141a'
       }}
       title="StellarTradeAgent Dashboard"
     />

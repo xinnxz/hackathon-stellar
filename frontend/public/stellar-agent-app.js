@@ -4,6 +4,7 @@ const API_URL = 'http://localhost:3000/api';
 const el = {
   wallet: document.getElementById('el-wallet-address'),
   btnWalletCopy: document.getElementById('btn-wallet-copy'),
+  btnWalletConnect: document.getElementById('btn-wallet-connect'),
   btnExportCsv: document.getElementById('btn-export-csv'),
   assetXlmCircle: document.getElementById('svg-xlm-circle'),
   assetUsdcCircle: document.getElementById('svg-usdc-circle'),
@@ -55,6 +56,7 @@ async function fetchStatus() {
     updateTradingUI();
     
     if (data.balances) {
+      currentWalletAddress = data.balances.publicKey || '';
       if (el.wallet) el.wallet.innerText = fmtAddress(currentWalletAddress);
       
       // Only recalc if price is loaded
@@ -244,6 +246,17 @@ function setupInteractions() {
     });
   });
 
+  if (el.btnWalletConnect) {
+    el.btnWalletConnect.innerText = 'View Explorer';
+    el.btnWalletConnect.addEventListener('click', () => {
+      if(currentWalletAddress) {
+        window.open(`https://stellar.expert/explorer/testnet/account/${currentWalletAddress}`, '_blank');
+      } else {
+        showToast('Wallet address not loaded yet.');
+      }
+    });
+  }
+  
   // Add global click handler for dummy buttons/links to make UI feel fully interactive
   const unclickableElements = document.querySelectorAll('a[href="#"], button:not(#btn-execute-trade):not(#btn-wallet-connect), .cursor-pointer:not(#btn-agent-toggle):not(#btn-wallet-copy):not(#btn-export-csv)');
 
@@ -423,4 +436,21 @@ function renderActiveTrades(positions) {
 }
 
 // Start app
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+  const mainEl = document.querySelector('main');
+  if (mainEl) {
+    // Initial hidden state
+    mainEl.style.opacity = 0;
+    mainEl.style.transform = 'translateY(15px)';
+    
+    // Trigger entrance animation
+    requestAnimationFrame(() => {
+       requestAnimationFrame(() => {
+         mainEl.style.transition = 'opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+         mainEl.style.opacity = 1;
+         mainEl.style.transform = 'translateY(0)';
+       });
+    });
+  }
+  init();
+});
