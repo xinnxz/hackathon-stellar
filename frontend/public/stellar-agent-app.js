@@ -42,6 +42,8 @@ let currentWalletAddress = '';
 let currentHistory = [];
 let cachedBalances = { xlm: 0, usdc: 0 };
 let currentPosition = null;   // Current open trade position
+let currentAnalysis = null;   // Current analysis (thoughts)
+
 
 // ── Heartbeat (micro-animation) ──
 let heartbeatInterval = null;
@@ -150,6 +152,7 @@ async function fetchSkillsStatus() {
     }
     
     if (data.prices && data.prices.length > 0) {
+      window.fullPricesData = data.prices;
       prices = data.prices.map(p => p.price);
       
       const firstPrice = prices[0];
@@ -176,7 +179,8 @@ async function fetchSkillsStatus() {
       
       // Current Position (for Active Trades widget)
       currentPosition = tradeData.position || null;
-      renderActivePosition(currentPosition);
+      currentAnalysis = data.analysis || null;
+      renderActivePosition(currentPosition, currentAnalysis);
       
       // Transaction History
       const historyArray = tradeData.trades || [];
@@ -262,13 +266,13 @@ function updateTradingUI() {
   }
   
   // Re-render position wrapper to reflect Idle/Scanning text
-  renderActivePosition(currentPosition);
+  renderActivePosition(currentPosition, currentAnalysis);
 }
 
 // ══════════════════════════════════════
 // Active Position / Trades Widget
 // ══════════════════════════════════════
-function renderActivePosition(position) {
+function renderActivePosition(position, analysis) {
   if (!el.tradesList) return;
   
   if (!position) {
@@ -280,11 +284,56 @@ function renderActivePosition(position) {
           <div class="text-[9px] text-on-surface-variant/50">Click Execute to start trading</div>
         </div>`;
     } else {
-      el.tradesList.innerHTML = `
-        <div class="text-center py-3 space-y-1">
-          <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest animate-pulse">Scanning market...</div>
-          <div class="text-[9px] text-on-surface-variant/50">Waiting for 3/4 indicator confluence</div>
-        </div>`;
+      if (analysis && analysis.confluence && analysis.indicators) {
+        const conf = analysis.confluence;
+        const ind = analysis.indicators;
+        
+        let phaseColor = 'on-surface-variant';
+        if (conf.phase === 'ACCUMULATION') phaseColor = 'emerald';
+        if (conf.phase === 'DISTRIBUTION') phaseColor = 'red';
+        if (conf.phase === 'MARKUP') phaseColor = 'blue';
+        if (conf.phase === 'MARKDOWN') phaseColor = 'orange';
+
+        const getColor = (sig) => sig === 'BUY' ? 'emerald' : (sig === 'SELL' ? 'red' : 'on-surface-variant');
+
+        el.tradesList.innerHTML = `
+          <div class="space-y-2.5">
+            <div class="flex justify-between items-center bg-surface-container rounded px-2 py-1 border border-on-surface-variant/10">
+              <span class="text-[8px] text-on-surface-variant font-black uppercase tracking-widest">Phase</span>
+              <span class="text-[9px] text-${phaseColor}-400 font-black uppercase tracking-widest shadow-sm">${conf.phase || 'SCANNING...'}</span>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-1">
+              <div class="bg-surface-container/30 border border-on-surface-variant/5 rounded px-1 py-1.5 text-center">
+                <div class="text-[7px] text-on-surface-variant/70 mb-[2px] font-bold uppercase">EMA Trend</div>
+                <div class="text-[9px] text-${getColor(ind.ema?.signal)}-400 font-black">${ind.ema?.signal || '-'}</div>
+              </div>
+              <div class="bg-surface-container/30 border border-on-surface-variant/5 rounded px-1 py-1.5 text-center">
+                <div class="text-[7px] text-on-surface-variant/70 mb-[2px] font-bold uppercase">RSI(8)</div>
+                <div class="text-[9px] text-${getColor(ind.rsi?.signal)}-400 font-black">${ind.rsi?.signal || '-'}</div>
+              </div>
+              <div class="bg-surface-container/30 border border-on-surface-variant/5 rounded px-1 py-1.5 text-center">
+                <div class="text-[7px] text-on-surface-variant/70 mb-[2px] font-bold uppercase">Mean-Rev</div>
+                <div class="text-[9px] text-${getColor(ind.meanReversion?.signal)}-400 font-black">${ind.meanReversion?.signal || '-'}</div>
+              </div>
+            </div>
+            
+            <div class="text-[8px] text-on-surface-variant/60 mono leading-snug uppercase border-t border-on-surface-variant/10 pt-2 flex items-start gap-1">
+              <span class="text-emerald-400 animate-pulse mt-[1px]">▶</span> 
+              <span class="break-words">${conf.reason || 'WAITING FOR CONFLUENCE...'}</span>
+            </div>
+          </div>
+        `;
+      } else {
+        el.tradesList.innerHTML = `
+          <div class="text-center py-3 space-y-1">
+            <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest flex justify-center items-center gap-1.5 animate-pulse">
+              <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
+              Scanning market...
+            </div>
+            <div class="text-[9px] text-on-surface-variant/50">Fetching analytical models</div>
+          </div>`;
+      }
     }
     return;
   }
@@ -386,32 +435,66 @@ function renderLedger(history) {
 }
 
 // ══════════════════════════════════════
-// SVG Chart Renderer (with smooth transitions)
+// TradingView Chart Renderer
 // ══════════════════════════════════════
+let tvChart = null;
+let tvSeries = null;
+
 function renderChart() {
-  if (!prices.length || !el.chartLine || !el.chartFill) return;
+  const container = document.getElementById('tv-chart');
+  if (!container || typeof LightweightCharts === 'undefined' || !window.fullPricesData) return;
   
-  const width = 100;
-  const height = 100;
+  if (!tvChart) {
+    tvChart = LightweightCharts.createChart(container, {
+      layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#d3c5ac' },
+      grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
+      timeScale: { timeVisible: true, secondsVisible: false, borderColor: 'rgba(255,255,255,0.1)' },
+      rightPriceScale: { borderColor: 'rgba(255,255,255,0.1)' },
+      crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+    });
+    
+    // Create Binance-style Candlestick
+    tvSeries = tvChart.addCandlestickSeries({
+      upColor: '#10b981', downColor: '#ef4444', 
+      borderVisible: false, wickUpColor: '#10b981', wickDownColor: '#ef4444'
+    });
+    
+    // Auto-resize
+    new ResizeObserver(() => tvChart.applyOptions({ width: container.clientWidth, height: container.clientHeight })).observe(container);
+  }
   
-  const min = Math.min(...prices) * 0.999;
-  const max = Math.max(...prices) * 1.001;
-  const range = max - min || 1;
-  
-  const getX = (i) => (i / (prices.length - 1 || 1)) * width;
-  const getY = (val) => height - ((val - min) / range) * height; 
-  
-  let pathD = `M 0 ${getY(prices[0]).toFixed(1)} `;
-  prices.forEach((p, i) => {
-    pathD += `L ${getX(i).toFixed(1)} ${getY(p).toFixed(1)} `;
+  // Transform ticks into pseudo OHLC candles
+  const cData = [];
+  window.fullPricesData.forEach((dp, i, arr) => {
+    const time = Math.floor(new Date(dp.timestamp).getTime() / 1000);
+    const close = dp.price;
+    const open = i === 0 ? close : arr[i-1].price;
+    const isUp = close >= open;
+    const noise = close * 0.0015; // Provide fake wick to make it look like a real candle
+    cData.push({
+      time: time,
+      open: open,
+      high: Math.max(open, close) + (isUp ? noise : noise*0.5),
+      low: Math.min(open, close) - (!isUp ? noise : noise*0.5),
+      close: close
+    });
   });
   
-  // Smooth transition via CSS
-  el.chartLine.style.transition = 'all 0.5s ease-out';
-  el.chartFill.style.transition = 'all 0.5s ease-out';
+  // LightweightCharts requires strictly ascending unique times
+  const uniqueData = [];
+  const timeSet = new Set();
+  cData.forEach(c => {
+    // If times collide (same second), add a slight jitter, or just skip. We will skip for safety.
+    if(!timeSet.has(c.time)) {
+       timeSet.add(c.time);
+       uniqueData.push(c);
+    }
+  });
   
-  el.chartLine.setAttribute('d', pathD);
-  el.chartFill.setAttribute('d', `${pathD} L 100 100 L 0 100 Z`);
+  uniqueData.sort((a,b) => a.time - b.time);
+  if (uniqueData.length > 0) {
+    tvSeries.setData(uniqueData);
+  }
 }
 
 // ══════════════════════════════════════

@@ -246,22 +246,9 @@ Portfolio Multi-Asset Performance
 </div>
 </div>
 <div class="h-[420px] w-full relative">
-<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-<defs>
-<linearGradient id="grad-gold" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" stop-color="#fcc010" stop-opacity="0.2"></stop>
-<stop offset="100%" stop-color="#fcc010" stop-opacity="0"></stop>
-</linearGradient>
-</defs>
-<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="20" y2="20"></line>
-<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="40" y2="40"></line>
-<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="60" y2="60"></line>
-<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="80" y2="80"></line>
-<path id="chart-path-fill" d="" fill="url(#grad-gold)"></path>
-<path id="chart-path-line" d="" fill="none" stroke="#fcc010" stroke-width="2"></path>
-<path d="M 0 85 Q 20 82, 35 70 T 60 75 T 80 65 L 100 60" fill="none" stroke="#d3c5ac" stroke-dasharray="2" stroke-opacity="0.3" stroke-width="1"></path>
-</svg>
-<div class="absolute top-0 right-0 flex flex-col gap-2 p-4 bg-surface-container-lowest/80 backdrop-blur rounded border border-outline-variant/10">
+<div id="tv-chart" class="w-full h-full rounded border border-outline-variant/10 shadow-inner overflow-hidden"></div>
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<div class="absolute top-4 right-4 flex flex-col gap-2 p-3 bg-surface-container-lowest/80 backdrop-blur rounded border border-outline-variant/10 pointer-events-none z-10">
 <div class="flex items-center gap-2">
 <div class="w-2 h-2 rounded-full bg-primary-container"></div>
 <span class="text-[10px] font-bold uppercase text-on-surface-variant">Active Alpha Strategy</span>

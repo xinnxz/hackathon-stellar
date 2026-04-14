@@ -270,6 +270,14 @@ app.get('/api/skills-status', (req, res) => {
     }
   } catch (e) { result.trades = null; }
   
+  // Read analysis state
+  try {
+    const analysisPath = path.resolve(__dirname, 'analysis-state.json');
+    if (fs.existsSync(analysisPath)) {
+      result.analysis = JSON.parse(fs.readFileSync(analysisPath, 'utf-8'));
+    }
+  } catch (e) { result.analysis = null; }
+  
   res.json(result);
 });
 
