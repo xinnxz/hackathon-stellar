@@ -3,11 +3,19 @@
  * ================
  * OpenClaw Skill Script: Jalankan 4 Technical Indicators + Confluence
  * 
- * STRATEGI: Aggressive Scalper
- * - Threshold lebih sensitif untuk menangkap micro-movements
- * - Confluence 2/4 sudah cukup untuk trade (bukan 3/4)
- * - Momentum-based: ikuti arah trend, jangan lawan
- * - Volatility filter: skip trading kalau market terlalu flat
+ * STRATEGI V2: Conservative Mean-Reversion
+ * =========================================
+ * PRINSIP DASAR:
+ * - Beli saat harga MURAH (di bawah rata-rata) → BUY LOW
+ * - Jual saat harga MAHAL (di atas rata-rata) → SELL HIGH
+ * - HOLD jika tidak jelas → LEBIH BAIK DIAM DARIPADA RUGI
+ * - JANGAN PERNAH trade melawan trend besar
+ * 
+ * PERUBAHAN DARI V1:
+ * - Confluence minimum 3/4 (bukan 2/4) — kurangi false signals
+ * - RSI threshold dikembalikan ke 35/65 — lebih konservatif
+ * - Tambah trend filter: jangan SELL di downtrend, jangan BUY di uptrend
+ * - Tambah profit-target check: jangan tutup posisi kecuali profit
  */
 import fs from 'fs';
 import path from 'path';
@@ -15,9 +23,10 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PRICE_HISTORY_FILE = path.resolve(__dirname, '../../server/price-history.json');
+const TRADE_STATE_FILE = path.resolve(__dirname, '../../server/trade-state.json');
 
 // ═══════════════════════════════════
-// Indicator Functions (Tuned for Real Scalping)
+// Indicator Functions (Conservative Tuning)
 // ═══════════════════════════════════
 
 function calcEMA(prices, period) {
@@ -31,35 +40,31 @@ function calcEMA(prices, period) {
 }
 
 /**
- * EMA Cross — Lebih sensitif untuk real prices
- * Fast EMA(3) vs Slow EMA(8) — period pendek untuk scalping
- * Threshold: 0.05% (sebelumnya 0.3%)
+ * EMA Cross — Medium-term trend detection
+ * Fast EMA(5) vs Slow EMA(15) — more reliable signals
+ * Threshold: 0.15% — filters noise but catches real moves
  */
 function analyzeEMA(prices) {
-  if (prices.length < 8) return { signal: 'HOLD', reason: 'Need 8+ prices for EMA', value: null };
-  const emaFast = calcEMA(prices, 3);  // Ultra-fast
-  const emaSlow = calcEMA(prices, 8);  // Fast
+  if (prices.length < 15) return { signal: 'HOLD', reason: 'Need 15+ prices for EMA', value: null };
+  const emaFast = calcEMA(prices, 5);
+  const emaSlow = calcEMA(prices, 15);
   const diff = ((emaFast - emaSlow) / emaSlow) * 100;
   
-  if (diff > 0.05) return { signal: 'BUY', reason: `Fast EMA above slow by ${diff.toFixed(3)}%`, value: parseFloat(diff.toFixed(2)) };
-  if (diff < -0.05) return { signal: 'SELL', reason: `Fast EMA below slow by ${Math.abs(diff).toFixed(3)}%`, value: parseFloat(diff.toFixed(2)) };
+  if (diff > 0.15) return { signal: 'BUY', reason: `Fast EMA above slow by ${diff.toFixed(3)}%`, value: parseFloat(diff.toFixed(2)) };
+  if (diff < -0.15) return { signal: 'SELL', reason: `Fast EMA below slow by ${Math.abs(diff).toFixed(3)}%`, value: parseFloat(diff.toFixed(2)) };
   return { signal: 'HOLD', reason: `EMAs within range (${diff.toFixed(3)}%)`, value: parseFloat(diff.toFixed(2)) };
 }
 
 /**
- * RSI — Lebih agresif untuk scalping
- * Threshold: 40/60 (sebelumnya 30/70)
- * Period lebih pendek: 6 (sebelumnya 14)
+ * RSI — Conservative zones
+ * Threshold: 35/65 — only trade at real extremes
+ * Period: 8 — balance between responsiveness and reliability
  */
-function analyzeRSI(prices, period = 6) {
+function analyzeRSI(prices, period = 8) {
   if (prices.length < period + 1) {
-    const usePeriod = Math.max(3, prices.length - 1);
-    return calcRSI(prices, usePeriod);
+    return { signal: 'HOLD', reason: 'Insufficient data for RSI', value: 50 };
   }
-  return calcRSI(prices, period);
-}
-
-function calcRSI(prices, period) {
+  
   let gains = 0, losses = 0;
   for (let i = prices.length - period; i < prices.length; i++) {
     const change = prices[i] - prices[i - 1];
@@ -70,45 +75,45 @@ function calcRSI(prices, period) {
   const avgGain = gains / period;
   const avgLoss = losses / period;
   
-  if (avgLoss === 0) return { signal: 'SELL', reason: 'RSI at 100 (overbought)', value: 100 };
+  if (avgLoss === 0) return { signal: 'SELL', reason: 'RSI at 100 (overbought extreme)', value: 100 };
   
   const rs = avgGain / avgLoss;
   const rsi = 100 - (100 / (1 + rs));
   
-  // Scalping: lebih agresif — 40/60 threshold
-  if (rsi < 40) return { signal: 'BUY', reason: `RSI ${rsi.toFixed(1)} — oversold`, value: parseFloat(rsi.toFixed(1)) };
-  if (rsi > 60) return { signal: 'SELL', reason: `RSI ${rsi.toFixed(1)} — overbought`, value: parseFloat(rsi.toFixed(1)) };
-  return { signal: 'HOLD', reason: `RSI ${rsi.toFixed(1)} — neutral`, value: parseFloat(rsi.toFixed(1)) };
+  // Conservative thresholds
+  if (rsi < 35) return { signal: 'BUY', reason: `RSI ${rsi.toFixed(1)} — oversold zone`, value: parseFloat(rsi.toFixed(1)) };
+  if (rsi > 65) return { signal: 'SELL', reason: `RSI ${rsi.toFixed(1)} — overbought zone`, value: parseFloat(rsi.toFixed(1)) };
+  return { signal: 'HOLD', reason: `RSI ${rsi.toFixed(1)} — neutral zone`, value: parseFloat(rsi.toFixed(1)) };
 }
 
 /**
- * Bollinger Bands — Tighter bands untuk scalping
- * Multiplier: 1.5 (sebelumnya 2.0) — lebih mudah trigger
+ * Bollinger Bands — Standard parameters
+ * Multiplier: 2.0 (standard) — only trigger at statistical extremes
  */
 function analyzeBB(prices) {
-  if (prices.length < 5) return { signal: 'HOLD', reason: 'Need 5+ prices for BB', value: null };
-  const period = Math.min(10, prices.length);  // Shorter period
+  if (prices.length < 10) return { signal: 'HOLD', reason: 'Need 10+ prices for BB', value: null };
+  const period = Math.min(20, prices.length);
   const slice = prices.slice(-period);
   const mean = slice.reduce((a, b) => a + b, 0) / slice.length;
   const variance = slice.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / slice.length;
   const std = Math.sqrt(variance);
   
-  const upper = mean + 1.5 * std;  // Tighter bands
-  const lower = mean - 1.5 * std;
+  const upper = mean + 2.0 * std;  // Standard 2σ bands
+  const lower = mean - 2.0 * std;
   const current = prices[prices.length - 1];
   const position = std > 0 ? ((current - lower) / (upper - lower)) * 100 : 50;
   
   if (current <= lower) return { signal: 'BUY', reason: `Price at lower BB (${position.toFixed(0)}%)`, value: parseFloat(position.toFixed(1)) };
   if (current >= upper) return { signal: 'SELL', reason: `Price at upper BB (${position.toFixed(0)}%)`, value: parseFloat(position.toFixed(1)) };
-  return { signal: 'HOLD', reason: `Price within bands (${position.toFixed(0)}%)`, value: parseFloat(position.toFixed(1)) };
+  return { signal: 'HOLD', reason: `Within bands (${position.toFixed(0)}%)`, value: parseFloat(position.toFixed(1)) };
 }
 
 /**
- * VWAP — Lebih sensitif
- * Threshold: 0.3% (sebelumnya 1%)
+ * VWAP — Reliable mean-reversion anchor
+ * Threshold: 0.5% — only trade when price deviates significantly from VWAP
  */
 function analyzeVWAP(prices, volumes) {
-  if (prices.length < 3) return { signal: 'HOLD', reason: 'Need 3+ prices for VWAP', value: null };
+  if (prices.length < 5) return { signal: 'HOLD', reason: 'Need 5+ prices for VWAP', value: null };
   
   let totalPV = 0, totalV = 0;
   for (let i = 0; i < prices.length; i++) {
@@ -120,71 +125,104 @@ function analyzeVWAP(prices, volumes) {
   const current = prices[prices.length - 1];
   const diff = ((current - vwap) / vwap) * 100;
   
-  // Scalping: 0.3% threshold
-  if (diff < -0.3) return { signal: 'BUY', reason: `Price ${Math.abs(diff).toFixed(2)}% below VWAP`, value: parseFloat(diff.toFixed(2)) };
-  if (diff > 0.3) return { signal: 'SELL', reason: `Price ${diff.toFixed(2)}% above VWAP`, value: parseFloat(diff.toFixed(2)) };
-  return { signal: 'HOLD', reason: `Price near VWAP (${diff.toFixed(2)}%)`, value: parseFloat(diff.toFixed(2)) };
+  if (diff < -0.5) return { signal: 'BUY', reason: `${Math.abs(diff).toFixed(2)}% below VWAP — undervalued`, value: parseFloat(diff.toFixed(2)) };
+  if (diff > 0.5) return { signal: 'SELL', reason: `${diff.toFixed(2)}% above VWAP — overvalued`, value: parseFloat(diff.toFixed(2)) };
+  return { signal: 'HOLD', reason: `Near VWAP (${diff.toFixed(2)}%)`, value: parseFloat(diff.toFixed(2)) };
 }
 
 /**
- * Confluence — Scalping Rules
+ * Confluence V2 — Conservative + Position-Aware
  * 
- * PERUBAHAN KUNCI:
- * - 2/4 indicators agree sudah cukup untuk trade (sebelumnya 3/4)
- * - Tambah momentum check: apakah harga trending ke satu arah?
- * - Confidence dihitung dari strength sinyal, bukan hanya jumlah vote
+ * RULES:
+ * 1. Need 3/4 indicators to agree for a trade signal
+ * 2. If we have an open SELL position → only signal BUY (to close at profit)
+ * 3. If we have an open BUY position → only signal SELL (to close at profit)
+ * 4. NEVER open a new position in the same direction as current position
+ * 5. Check if closing would be profitable before signaling
  */
 function calcConfluence(indicators, prices) {
   const signals = Object.values(indicators).map(i => i.signal);
   const votes = { buy: 0, sell: 0, hold: 0 };
   signals.forEach(s => votes[s.toLowerCase()]++);
   
-  // Momentum check: arah pergerakan 5 harga terakhir
-  let momentum = 'FLAT';
-  if (prices.length >= 5) {
-    const recent = prices.slice(-5);
-    const first = recent[0];
-    const last = recent[recent.length - 1];
-    const change = ((last - first) / first) * 100;
-    if (change > 0.05) momentum = 'UP';
-    else if (change < -0.05) momentum = 'DOWN';
+  // Trend check: direction of last 10 prices
+  let trend = 'FLAT';
+  if (prices.length >= 10) {
+    const recent = prices.slice(-10);
+    const change = ((recent[recent.length - 1] - recent[0]) / recent[0]) * 100;
+    if (change > 0.2) trend = 'UP';
+    else if (change < -0.2) trend = 'DOWN';
   }
+  
+  // Check current position
+  let currentPosition = null;
+  try {
+    if (fs.existsSync(TRADE_STATE_FILE)) {
+      const state = JSON.parse(fs.readFileSync(TRADE_STATE_FILE, 'utf-8'));
+      currentPosition = state.position;
+    }
+  } catch (e) { /* */ }
   
   let signal = 'HOLD';
   let confidence = 0;
   let reason = '';
+  const currentPrice = prices[prices.length - 1];
   
-  // Scalping: 2/4 agreement + momentum confirmation = execute 
-  if (votes.buy >= 3) {
-    signal = 'BUY';
-    confidence = votes.buy / 4;
-    reason = `${votes.buy}/4 indicators signal BUY`;
-  } else if (votes.sell >= 3) {
-    signal = 'SELL';
-    confidence = votes.sell / 4;
-    reason = `${votes.sell}/4 indicators signal SELL`;
-  } else if (votes.buy >= 2 && momentum === 'UP') {
-    signal = 'BUY';
-    confidence = 0.6; // 60% — moderate confidence with momentum
-    reason = `2/4 indicators BUY + upward momentum`;
-  } else if (votes.sell >= 2 && momentum === 'DOWN') {
-    signal = 'SELL';
-    confidence = 0.6;
-    reason = `2/4 indicators SELL + downward momentum`;
-  } else if (votes.buy >= 2 && votes.sell === 0) {
-    signal = 'BUY';
-    confidence = 0.5;
-    reason = `2/4 BUY, 0 SELL — lean bullish`;
-  } else if (votes.sell >= 2 && votes.buy === 0) {
-    signal = 'SELL';
-    confidence = 0.5;
-    reason = `2/4 SELL, 0 BUY — lean bearish`;
+  // ═══ POSITION-AWARE LOGIC ═══
+  if (currentPosition) {
+    // We have an open position — only look for profitable exit
+    const entryPrice = currentPosition.entryPrice;
+    const side = currentPosition.side;
+    
+    if (side === 'SELL') {
+      // Open SELL → need BUY to close → only close if price dropped (profit)
+      const profitPct = ((entryPrice - currentPrice) / entryPrice) * 100;
+      if (profitPct > 0.3 && votes.buy >= 2) {
+        signal = 'BUY';
+        confidence = 0.85;
+        reason = `Close SELL at +${profitPct.toFixed(2)}% profit (${votes.buy}/4 BUY)`;
+      } else if (profitPct < -3.0) {
+        // Stop loss — cut losses
+        signal = 'BUY';
+        confidence = 0.9;
+        reason = `STOP LOSS: Close SELL at ${profitPct.toFixed(2)}% loss`;
+      } else {
+        reason = `Holding SELL position (P&L: ${profitPct.toFixed(2)}%)`;
+      }
+    } else if (side === 'BUY') {
+      // Open BUY → need SELL to close → only close if price rose (profit)
+      const profitPct = ((currentPrice - entryPrice) / entryPrice) * 100;
+      if (profitPct > 0.3 && votes.sell >= 2) {
+        signal = 'SELL';
+        confidence = 0.85;
+        reason = `Close BUY at +${profitPct.toFixed(2)}% profit (${votes.sell}/4 SELL)`;
+      } else if (profitPct < -3.0) {
+        // Stop loss
+        signal = 'SELL';
+        confidence = 0.9;
+        reason = `STOP LOSS: Close BUY at ${profitPct.toFixed(2)}% loss`;
+      } else {
+        reason = `Holding BUY position (P&L: ${profitPct.toFixed(2)}%)`;
+      }
+    }
   } else {
-    confidence = Math.max(votes.buy, votes.sell) / 4;
-    reason = `No consensus: ${votes.buy}B/${votes.sell}S/${votes.hold}H`;
+    // ═══ NO POSITION — Look for entry ═══
+    // Conservative: need 3/4 agreement
+    if (votes.buy >= 3 && trend !== 'DOWN') {
+      signal = 'BUY';
+      confidence = votes.buy / 4;
+      reason = `${votes.buy}/4 indicators BUY + trend ${trend}`;
+    } else if (votes.sell >= 3 && trend !== 'UP') {
+      signal = 'SELL';
+      confidence = votes.sell / 4;
+      reason = `${votes.sell}/4 indicators SELL + trend ${trend}`;
+    } else {
+      confidence = Math.max(votes.buy, votes.sell) / 4;
+      reason = `No strong consensus: ${votes.buy}B/${votes.sell}S/${votes.hold}H (need 3/4)`;
+    }
   }
   
-  return { signal, confidence, votes, reason, momentum };
+  return { signal, confidence, votes, reason, trend, hasPosition: !!currentPosition };
 }
 
 // ═══════════════════════════════════
@@ -194,16 +232,16 @@ function calcConfluence(indicators, prices) {
 function main() {
   if (!fs.existsSync(PRICE_HISTORY_FILE)) {
     console.log(JSON.stringify({
-      error: 'No price history found. Run /stellar-poll-price first (need 5+ polls).'
+      error: 'No price history found. Run /stellar-poll-price first (need 10+ polls).'
     }));
     return;
   }
 
   const history = JSON.parse(fs.readFileSync(PRICE_HISTORY_FILE, 'utf-8'));
   
-  if (history.length < 3) {
+  if (history.length < 5) {
     console.log(JSON.stringify({
-      error: `Only ${history.length} price points. Need at least 3. Run /stellar-poll-price more.`
+      error: `Only ${history.length} price points. Need at least 5. Run /stellar-poll-price more.`
     }));
     return;
   }
@@ -219,7 +257,7 @@ function main() {
     vwap: analyzeVWAP(prices, volumes)
   };
 
-  // Calculate confluence with momentum
+  // Calculate confluence with position awareness
   const confluence = calcConfluence(indicators, prices);
 
   const result = {
