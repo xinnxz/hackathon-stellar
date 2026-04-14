@@ -102,8 +102,8 @@
 <div class="flex items-center gap-8">
 <span class="text-xl font-bold tracking-tight text-[#fcc010]">StellarTradeAgent</span>
 <nav class="hidden md:flex gap-6">
-<a class="text-[#fcc010] border-b-2 border-[#fcc010] pb-1 font-bold text-sm tracking-wide" href="code.html">Markets</a>
-<a class="text-[#d3c5ac] font-medium text-sm tracking-wide hover:bg-[#1f2c34] transition-colors duration-150 px-2 rounded" href="portfolio.html">Portfolio</a>
+<a class="text-[#d3c5ac] font-medium text-sm tracking-wide hover:bg-[#1f2c34] transition-colors duration-150 px-2 rounded" href="code.html">Markets</a>
+<a class="text-[#fcc010] border-b-2 border-[#fcc010] pb-1 font-bold text-sm tracking-wide" href="portfolio.html">Portfolio</a>
 <a class="text-[#d3c5ac] font-medium text-sm tracking-wide hover:bg-[#1f2c34] transition-colors duration-150 px-2 rounded" href="history.html">History</a>
 <a class="text-[#d3c5ac] font-medium text-sm tracking-wide hover:bg-[#1f2c34] transition-colors duration-150 px-2 rounded" href="settings.html">Settings</a>
 </nav>
@@ -205,143 +205,90 @@ No active trades
 </div>
 </aside>
 <main class="ml-80 mt-16 p-6 h-[calc(100vh-64px)] overflow-y-auto bg-surface">
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-<div class="bg-surface-container-low p-5 rounded-xl border-b border-primary-container/20">
-<div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Total Balance</div>
-<div id="el-total-balance" class="text-3xl font-bold mono text-primary-container">$0.00</div>
-<div class="text-[10px] mono text-emerald-400 mt-1">REAL-TIME DATA</div>
-</div>
-<div class="bg-surface-container-low p-5 rounded-xl">
-<div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">24h PnL</div>
-<div id="el-24h-pnl" class="text-3xl font-bold mono text-emerald-400">+$0.00</div>
-<div class="text-[10px] mono text-on-surface-variant mt-1">REALIZED GAINS</div>
-</div>
-<div class="bg-surface-container-low p-5 rounded-xl">
-<div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Win Rate</div>
-<div id="el-win-rate" class="text-3xl font-bold mono text-on-surface">0%</div>
-<div class="flex gap-1 mt-2">
-<div class="h-1 flex-1 bg-emerald-500 rounded-full"></div>
-<div class="h-1 flex-1 bg-emerald-500 rounded-full"></div>
-<div class="h-1 flex-1 bg-emerald-500 rounded-full"></div>
-<div class="h-1 flex-1 bg-surface-variant rounded-full"></div>
-</div>
-</div>
-</div>
-<div class="grid grid-cols-12 gap-6 mb-6">
-<div class="col-span-12 xl:col-span-9 bg-surface-container p-6 rounded-xl border border-outline-variant/10">
-<div class="flex justify-between items-center mb-8">
-<div>
-<h2 class="text-xl font-bold tracking-tight text-on-surface flex items-center gap-4">
-Portfolio Multi-Asset Performance
-<span id="el-current-price" class="text-emerald-400 mono text-base font-bold">0.00000 (+0.00%)</span>
-</h2>
-<p class="text-xs text-on-surface-variant mt-1 uppercase tracking-wider">XLM/USDC · Consolidated Strategic View</p>
-</div>
-<div class="flex bg-surface-container-lowest p-1 rounded-lg border border-outline-variant/10">
-<button class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-on-surface">1M</button>
-<button class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-surface-variant text-primary-container rounded">6M</button>
-<button class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-on-surface">1Y</button>
-<button class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-on-surface">ALL</button>
-</div>
-</div>
-<div class="h-[420px] w-full relative">
-<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-<defs>
-<linearGradient id="grad-gold" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" stop-color="#fcc010" stop-opacity="0.2"></stop>
-<stop offset="100%" stop-color="#fcc010" stop-opacity="0"></stop>
-</linearGradient>
-</defs>
-<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="20" y2="20"></line>
-<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="40" y2="40"></line>
-<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="60" y2="60"></line>
-<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="80" y2="80"></line>
-<path id="chart-path-fill" d="" fill="url(#grad-gold)"></path>
-<path id="chart-path-line" d="" fill="none" stroke="#fcc010" stroke-width="2"></path>
-<path d="M 0 85 Q 20 82, 35 70 T 60 75 T 80 65 L 100 60" fill="none" stroke="#d3c5ac" stroke-dasharray="2" stroke-opacity="0.3" stroke-width="1"></path>
-</svg>
-<div class="absolute top-0 right-0 flex flex-col gap-2 p-4 bg-surface-container-lowest/80 backdrop-blur rounded border border-outline-variant/10">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-primary-container"></div>
-<span class="text-[10px] font-bold uppercase text-on-surface-variant">Active Alpha Strategy</span>
-</div>
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-[#d3c5ac] opacity-50"></div>
-<span class="text-[10px] font-bold uppercase text-on-surface-variant">Benchmark Index</span>
-</div>
-</div>
-</div>
-</div>
-<div class="col-span-12 xl:col-span-3">
-<div class="bg-surface-container p-6 rounded-xl h-full border border-outline-variant/5">
-<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-8 block">Asset Allocation</span>
-<div class="relative w-40 h-40 mx-auto mb-10">
-<svg class="w-full h-full transform -rotate-90">
-<circle cx="80" cy="80" fill="transparent" r="65" stroke="#1f2c34" stroke-width="14"></circle>
-<circle id="svg-xlm-circle" cx="80" cy="80" fill="transparent" r="65" stroke="#fcc010" stroke-dasharray="408" stroke-dashoffset="155" stroke-width="14" style="transition: stroke-dashoffset 1s ease-in-out;"></circle>
-<circle id="svg-usdc-circle" cx="80" cy="80" fill="transparent" r="65" stroke="#0fd9fc" stroke-dasharray="408" stroke-dashoffset="340" stroke-width="14" style="transition: stroke-dashoffset 1s ease-in-out;"></circle>
-</svg>
-<div class="absolute inset-0 flex items-center justify-center flex-col">
-<span class="text-[11px] text-on-surface-variant font-bold uppercase tracking-widest">XLM</span>
-<span id="text-xlm-percent-main" class="text-xl font-bold mono">--%</span>
-</div>
-</div>
-<div class="space-y-4">
-<div class="flex items-center justify-between text-xs">
-<div class="flex items-center gap-3">
-<div class="w-2.5 h-2.5 rounded-sm bg-primary-container"></div>
-<span class="uppercase tracking-widest font-bold">XLM</span>
-</div>
-<span id="text-xlm-percent-list" class="mono">--%</span>
-</div>
-<div class="flex items-center justify-between text-xs">
-<div class="flex items-center gap-3">
-<div class="w-2.5 h-2.5 rounded-sm bg-tertiary-container"></div>
-<span class="uppercase tracking-widest font-bold">USDC</span>
-</div>
-<span id="text-usdc-percent-list" class="mono">--%</span>
-</div>
-<div class="flex items-center justify-between text-xs">
-<div class="flex items-center gap-3">
-<div class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></div>
-<span class="uppercase tracking-widest font-bold">ETH</span>
-</div>
-<span class="mono">10%</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="bg-surface-container rounded-xl overflow-hidden mb-8 border border-outline-variant/10">
-<div class="px-6 py-5 border-b border-outline-variant/10 flex justify-between items-center">
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-on-surface-variant" data-icon="receipt_long">receipt_long</span>
-<h3 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.2em]">Transaction Ledger</h3>
-</div>
-<div class="flex gap-4">
-<div id="btn-export-csv" class="flex items-center gap-2 text-[10px] font-bold text-on-surface-variant cursor-pointer hover:text-primary hover:bg-surface-variant transition-colors border border-outline-variant/20 px-3 py-1.5 rounded-lg">
-<span class="material-symbols-outlined text-[14px]" data-icon="download">download</span> EXPORT CSV
-                    </div>
-</div>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead>
-<tr class="bg-surface-container-lowest/50 text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">
-<th class="px-6 py-4">Time</th>
-<th class="px-6 py-4">Pair</th>
-<th class="px-6 py-4">Type</th>
-<th class="px-6 py-4 text-right">Price</th>
-<th class="px-6 py-4 text-right">Amount</th>
-<th class="px-6 py-4 text-right">PnL</th>
-<th class="px-6 py-4 text-right">Status</th>
-</tr>
-</thead>
-<tbody id="el-ledger-tbody" class="divide-y divide-outline-variant/5">
-</tbody>
-</table>
-</div>
-</div>
+  <div class="mb-8">
+      <h2 class="text-2xl font-bold text-on-surface">Asset Portfolio</h2>
+      <p class="text-on-surface-variant text-sm mt-1 uppercase tracking-widest">Real-time balances and allocation</p>
+  </div>
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-surface-container p-6 rounded-xl border border-outline-variant/10 flex flex-col justify-center items-center h-48">
+       <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-4">Total Value (USD)</span>
+       <div id="el-total-balance" class="text-5xl font-bold mono text-primary-container">$0.00</div>
+       <div class="text-[10px] mono text-emerald-400 mt-3 pt-3 border-t border-outline-variant/10 w-full text-center">UPDATED LIVE</div>
+    </div>
+    <div class="bg-surface-container p-6 rounded-xl border border-outline-variant/10 flex items-center justify-between h-48">
+       <div class="w-1/2 flex justify-center">
+         <div class="relative w-32 h-32">
+             <!-- SVG Pie here -->
+            <svg class="w-full h-full transform -rotate-90">
+            <circle cx="64" cy="64" fill="transparent" r="50" stroke="#1f2c34" stroke-width="12"></circle>
+            <circle id="svg-xlm-circle" cx="64" cy="64" fill="transparent" r="50" stroke="#fcc010" stroke-dasharray="314" stroke-dashoffset="150" stroke-width="12"></circle>
+            <circle id="svg-usdc-circle" cx="64" cy="64" fill="transparent" r="50" stroke="#0fd9fc" stroke-dasharray="314" stroke-dashoffset="200" stroke-width="12"></circle>
+            </svg>
+         </div>
+       </div>
+       <div class="w-1/2 space-y-4">
+           <div class="flex flex-col">
+              <div class="flex items-center gap-2 mb-1"><div class="w-3 h-3 bg-primary-container rounded-sm"></div><span class="text-xs font-bold uppercase tracking-wide">XLM</span></div>
+              <span id="text-xlm-percent-list" class="text-xl mono text-on-surface font-bold">50%</span>
+           </div>
+           <div class="flex flex-col">
+              <div class="flex items-center gap-2 mb-1"><div class="w-3 h-3 bg-tertiary-container rounded-sm"></div><span class="text-xs font-bold uppercase tracking-wide">USDC</span></div>
+              <span id="text-usdc-percent-list" class="text-xl mono text-on-surface font-bold">50%</span>
+           </div>
+       </div>
+    </div>
+  </div>
+  
+  <div class="bg-surface-container rounded-xl overflow-hidden border border-outline-variant/10">
+    <div class="px-6 py-5 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-low">
+       <div class="flex items-center gap-2">
+           <span class="material-symbols-outlined text-on-surface-variant text-lg" data-icon="account_balance">account_balance</span>
+           <h3 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.2em]">Holdings Breakdown</h3>
+       </div>
+    </div>
+    <table class="w-full text-left">
+      <thead>
+         <tr class="bg-surface-container-lowest/50 text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">
+            <th class="px-6 py-4">Asset</th>
+            <th class="px-6 py-4">Network</th>
+            <th class="px-6 py-4 text-right">Balance</th>
+         </tr>
+      </thead>
+      <tbody>
+         <tr class="hover:bg-surface-bright transition-colors cursor-pointer border-b border-outline-variant/5">
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-4">
+                 <div class="w-8 h-8 rounded-full bg-primary-container/20 border border-primary-container/50 flex items-center justify-center">
+                    <div class="w-3 h-3 bg-primary-container rounded-sm"></div>
+                 </div>
+                 <div>
+                    <div class="font-bold">Stellar Lumen</div>
+                    <div class="text-[10px] text-on-surface-variant mt-1">XLM</div>
+                 </div>
+              </div>
+            </td>
+            <td class="px-6 py-5 text-[10px] mono uppercase text-primary-container font-bold"><span class="px-2 py-1 bg-primary-container/10 rounded">Testnet</span></td>
+            <td class="px-6 py-5 text-right font-bold mono text-lg">10,000.00 <span class="text-on-surface-variant text-sm">XLM</span></td>
+         </tr>
+         <tr class="hover:bg-surface-bright transition-colors cursor-pointer">
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-4">
+                 <div class="w-8 h-8 rounded-full bg-tertiary-container/20 border border-tertiary-container/50 flex items-center justify-center">
+                    <div class="w-3 h-3 bg-tertiary-container rounded-sm"></div>
+                 </div>
+                 <div>
+                    <div class="font-bold">USD Coin</div>
+                    <div class="text-[10px] text-on-surface-variant mt-1">USDC</div>
+                 </div>
+              </div>
+            </td>
+            <td class="px-6 py-5 text-[10px] mono uppercase text-primary-container font-bold"><span class="px-2 py-1 bg-primary-container/10 rounded">Testnet</span></td>
+            <td class="px-6 py-5 text-right font-bold mono text-lg">1,000.00 <span class="text-on-surface-variant text-sm">USDC</span></td>
+         </tr>
+      </tbody>
+    </table>
+  </div>
 </main>
 <script src="/stellar-agent-app.js"></script>
 </body></html>

@@ -55,8 +55,7 @@ async function fetchStatus() {
     updateTradingUI();
     
     if (data.balances) {
-      currentWalletAddress = data.balances.publicKey || '';
-      el.wallet.innerText = fmtAddress(currentWalletAddress);
+      if (el.wallet) el.wallet.innerText = fmtAddress(currentWalletAddress);
       
       // Only recalc if price is loaded
       if (latestPrice > 0) {
@@ -87,13 +86,14 @@ async function fetchSkillsStatus() {
     
     if (data.trades) {
       const pnl = data.trades.totalPnl || 0;
-      el.pnl.innerText = `${pnl >= 0 ? '+' : ''}${fmtCurrency(pnl)}`;
-      el.pnl.className = `text-3xl font-bold mono text-${pnl >= 0 ? 'emerald' : 'red'}-400`;
+      if(el.pnl) {
+        el.pnl.innerText = `${pnl >= 0 ? '+' : ''}${fmtCurrency(pnl)}`;
+        el.pnl.className = `text-3xl font-bold mono text-${pnl >= 0 ? 'emerald' : 'red'}-400`;
+      }
+      if(el.winRate) el.winRate.innerText = `${((data.trades.stats?.winRate || 0)*100).toFixed(0)}%`;
       
-      el.winRate.innerText = `${((data.trades.stats?.winRate || 0)*100).toFixed(0)}%`;
-      
-      renderLedger(data.trades.history || []);
-      renderActiveTrades(data.trades.openPositions || []);
+      if(el.ledger) renderLedger(data.trades.history || []);
+      if(el.tradesList) renderActiveTrades(data.trades.openPositions || []);
     }
     
     // Trigger total balance recalculation
@@ -124,16 +124,19 @@ function updateAssetAllocation(xlm, usdc, price) {
 }
 
 function updatePriceDisplay(price, change) {
+  if(!el.price) return;
   el.price.innerText = `${fmtNumber(price)} (${change > 0 ? '+' : ''}${change.toFixed(2)}%)`;
   el.price.className = `text-${change >= 0 ? 'emerald' : 'red'}-400 mono text-base font-bold`;
 }
 
 function updateTotalBalance(xlm, usdc) {
+  if(!el.totalBalance) return;
   const total = (xlm * latestPrice) + usdc;
   el.totalBalance.innerText = fmtCurrency(total);
 }
 
 function updateTradingUI() {
+  if(!el.status || !el.btnExecute || !el.btnToggle) return;
   if (isTrading) {
     el.status.innerText = 'TRADING';
     el.status.className = 'text-[11px] font-bold text-emerald-400 uppercase';
@@ -186,6 +189,7 @@ function exportCsv() {
 
 function setupInteractions() {
   const toggleTrading = async () => {
+    if(!el.status) return;
     const endpoint = isTrading ? '/stop' : '/start';
     el.status.innerText = isTrading ? 'STOPPING...' : 'STARTING...';
     try {
@@ -198,8 +202,8 @@ function setupInteractions() {
     }
   };
 
-  el.btnExecute.addEventListener('click', toggleTrading);
-  el.btnToggle.addEventListener('click', toggleTrading);
+  if(el.btnExecute) el.btnExecute.addEventListener('click', toggleTrading);
+  if(el.btnToggle) el.btnToggle.addEventListener('click', toggleTrading);
   
   // Real algorithms for Wallet & CSV
   if (el.btnWalletCopy) {
@@ -218,8 +222,31 @@ function setupInteractions() {
     });
   }
   
+  // Smart Page Transitions for Navigation
+  const navLinks = document.querySelectorAll('nav a');
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const targetHref = link.getAttribute('href');
+      if (!targetHref || targetHref === '#' || window.location.pathname.endsWith(targetHref)) return;
+      
+      e.preventDefault();
+      const mainEl = document.querySelector('main');
+      if (mainEl) {
+         mainEl.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
+         mainEl.style.opacity = 0;
+         mainEl.style.transform = 'translateY(10px)';
+      }
+      
+      document.body.style.cursor = 'wait';
+      setTimeout(() => {
+        window.location.href = targetHref;
+      }, 200);
+    });
+  });
+
   // Add global click handler for dummy buttons/links to make UI feel fully interactive
   const unclickableElements = document.querySelectorAll('a[href="#"], button:not(#btn-execute-trade):not(#btn-wallet-connect), .cursor-pointer:not(#btn-agent-toggle):not(#btn-wallet-copy):not(#btn-export-csv)');
+
   unclickableElements.forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
@@ -278,10 +305,10 @@ function setupSSE() {
       
       const pingTime = performance.now() - lastTime;
       // Filter out some noise, only update latency realistically
-      if (pingTime > 100 && pingTime < 3000) {
+      if (pingTime > 100 && pingTime < 3000 && el.latency) {
         el.latency.innerText = `${Math.round(pingTime)}ms`;
       }
-      el.pulse.innerText = now.toLocaleTimeString('en-US', { hour12: false });
+      if (el.pulse) el.pulse.innerText = now.toLocaleTimeString('en-US', { hour12: false });
       lastTime = performance.now();
       
       if (msg.type === 'STATUS' && msg.data.balances) {
