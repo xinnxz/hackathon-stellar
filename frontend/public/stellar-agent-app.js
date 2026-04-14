@@ -446,6 +446,7 @@ function renderChart() {
   
   if (!tvChart) {
     tvChart = LightweightCharts.createChart(container, {
+      autoSize: true, // Let TradingView handle component resizing
       layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#d3c5ac' },
       grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
       timeScale: { timeVisible: true, secondsVisible: false, borderColor: 'rgba(255,255,255,0.1)' },
@@ -458,9 +459,6 @@ function renderChart() {
       upColor: '#10b981', downColor: '#ef4444', 
       borderVisible: false, wickUpColor: '#10b981', wickDownColor: '#ef4444'
     });
-    
-    // Auto-resize
-    new ResizeObserver(() => tvChart.applyOptions({ width: container.clientWidth, height: container.clientHeight })).observe(container);
   }
   
   // Transform ticks into pseudo OHLC candles
@@ -660,6 +658,11 @@ function setupSSE() {
         
         prices.push(latestPrice);
         if (prices.length > 100) prices.shift();
+        
+        if (window.fullPricesData) {
+           window.fullPricesData.push(msg.data);
+           if (window.fullPricesData.length > 100) window.fullPricesData.shift();
+        }
         
         updatePriceDisplay(latestPrice, msg.data.change || 0);
         renderChart();
