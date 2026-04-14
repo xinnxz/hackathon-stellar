@@ -1,47 +1,47 @@
 {
   "success": true,
-  "currentPrice": 0.176835,
+  "currentPrice": 0.132577,
   "dataPoints": 100,
   "indicators": {
     "ema": {
-      "signal": "BUY",
-      "reason": "EMA5 > EMA15 by 4.098%",
-      "value": 4.098
+      "signal": "SELL",
+      "reason": "EMA5 < EMA15 by 0.396%",
+      "value": -0.396
     },
     "rsi": {
-      "signal": "SELL",
-      "reason": "RSI 74.6 — overbought",
-      "value": 74.6
+      "signal": "HOLD",
+      "reason": "RSI 46.0 — neutral",
+      "value": 46
     },
     "bb": {
       "signal": "HOLD",
-      "reason": "Within bands (83%)",
-      "value": 82.6
+      "reason": "Within bands (53%)",
+      "value": 53
     },
     "meanReversion": {
-      "signal": "SELL",
-      "reason": "7.89% above SMA20 — overvalued",
-      "value": 7.89
+      "signal": "HOLD",
+      "reason": "Near SMA20 (0.49%)",
+      "value": 0.49
     }
   },
   "confluence": {
-    "signal": "BUY",
+    "signal": "SELL",
     "confidence": 0.95,
     "votes": {
-      "buy": 1,
-      "sell": 2,
-      "hold": 1
+      "buy": 0,
+      "sell": 1,
+      "hold": 3
     },
-    "reason": "🛑 STOP LOSS: -7.85% (limit -1.5%)",
+    "reason": "🎯 TAKE PROFIT: +9.15% (target +2%)",
     "positionSize": 100,
-    "phase": "MARKUP",
+    "phase": "RANGING",
     "keyLevels": {
-      "support": 0.14579,
-      "resistance": 0.17867,
-      "sma20": 0.1639,
-      "current": 0.17683
+      "support": 0.11724,
+      "resistance": 0.13903,
+      "sma20": 0.13193,
+      "current": 0.13258
     },
     "hasPosition": true
   },
-  "timestamp": "2026-04-14T12:35:55.420Z"
+  "timestamp": "2026-04-14T16:14:37.344Z"
 }
