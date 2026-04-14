@@ -179,11 +179,151 @@
       "pnlPercent": 11.011517398885093,
       "txHash": "bc9e20083bbef8cbd97e9b15a61653de7b673c4df9c0e6c882c060eecf8d5601",
       "timestamp": "2026-04-14T10:25:31.411Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.131603,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "0a7aa56da4de7ebe07ad94fc36a1f7eca128bf9d2c2cf78d03bd3ef401f98cc4",
+      "timestamp": "2026-04-14T10:57:14.502Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.149871,
+      "pnl": 1.8268000000000004,
+      "pnlPercent": 13.881142527146043,
+      "txHash": "225b85c2eebe518ea1962e05ad4e48e51d5f01b394187860029dca8df74916fd",
+      "timestamp": "2026-04-14T11:02:30.504Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.167132,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "8b4ef65077be1d3804ef7356bbcbaa1c2c7a79da6736f5bcb8000966ff9292ff",
+      "timestamp": "2026-04-14T11:03:40.404Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.142661,
+      "pnl": 2.447099999999999,
+      "pnlPercent": 14.64172031687528,
+      "txHash": "66e994b5e83f0303d17d5c2d4f7edc8ab5fa98d0c99bc6dd776c922525bd3bac",
+      "timestamp": "2026-04-14T11:05:10.439Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.132365,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "baa6817f472ce51811d6bc9003b11d0bbf72e0ad167ce161612ef6018342c814",
+      "timestamp": "2026-04-14T11:11:11.400Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.14755,
+      "pnl": 1.5184999999999977,
+      "pnlPercent": 11.472065878442168,
+      "txHash": "c1b3014db687a27a9e8c0594c10107f7b5cc339cf2bdd62dca994bca3653eeec",
+      "timestamp": "2026-04-14T11:20:42.499Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.159528,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "335477c314473f4ea1a6e6738a0ee490c1512c3d56c8e0969cba3ab785ecb112",
+      "timestamp": "2026-04-14T11:21:57.499Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.14686,
+      "pnl": 1.2668,
+      "pnlPercent": 7.940925730906173,
+      "txHash": "c4448ffc045508c7193a08162de4a638ba097fe1698ee1f84732d3e1c5e4146b",
+      "timestamp": "2026-04-14T11:40:59.396Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.158306,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "edca9b0fa137e5bc34c89fa0a9fac95d04df579194931c5803b16ece508bcf09",
+      "timestamp": "2026-04-14T11:55:31.519Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.14674,
+      "pnl": 1.1565999999999992,
+      "pnlPercent": 7.306103369423769,
+      "txHash": "eaea2d05c119e715640ea9c6591848e5da225dfdc296915924414b52211197d9",
+      "timestamp": "2026-04-14T11:59:16.398Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.142638,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "9277de74b963064617b4d2d93aad133664553b052591bcd302ea87b3a61307be",
+      "timestamp": "2026-04-14T12:04:02.398Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.147039,
+      "pnl": 0.4401000000000028,
+      "pnlPercent": 3.0854330543053243,
+      "txHash": "a3b02e1518039a0754496abf4c3484f686c294d8c9da3536a7efd504d297aa3d",
+      "timestamp": "2026-04-14T12:07:42.388Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.130008,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "6fcddfb8a8e17336a83b03f2bf1fb91599f56d22feffee60bc3d5a47df7b45fd",
+      "timestamp": "2026-04-14T12:10:27.389Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.15126,
+      "pnl": 2.1251999999999995,
+      "pnlPercent": 16.346686357762593,
+      "txHash": "50cf3c32b9e37c368ef3f9e6b8c3a9a861db855abb006d838b6f24991a5d38f3",
+      "timestamp": "2026-04-14T12:28:59.386Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.163962,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "23cc39cb87940e3126b871f8e782dee1d8a0aa8be53c6455c5e40a0814b907f6",
+      "timestamp": "2026-04-14T12:33:30.486Z"
     }
   ],
-  "totalPnL": 16.851,
-  "winningTrades": 10,
+  "totalPnL": 27.632099999999994,
+  "winningTrades": 17,
   "losingTrades": 0,
-  "position": null,
-  "lastTradeTime": 1776162331412
+  "position": {
+    "side": "SELL",
+    "amount": 100,
+    "entryPrice": 0.163962,
+    "timestamp": "2026-04-14T12:33:30.485Z"
+  },
+  "lastTradeTime": 1776170010486
 }

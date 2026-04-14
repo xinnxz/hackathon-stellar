@@ -1,5 +1,9 @@
 # StellarTradeAgent
 
+<div align="center">
+  <img src="./frontend/public/logo.jpg" alt="StellarTradeAgent Logo" width="200" />
+</div>
+
 **An autonomous AI agent that pays for market intelligence and trades on Stellar — every payment and trade is a real on-chain transaction.**
 
 [![Stellar](https://img.shields.io/badge/Stellar-Testnet-blue)](https://stellar.org)
