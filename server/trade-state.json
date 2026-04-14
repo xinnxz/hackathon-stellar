@@ -431,12 +431,71 @@
       "pnlPercent": 17.176234124494986,
       "txHash": "1bb8f9c8d4a1dfe9204db8166086b095d8f766a6f7b125356060be5dddcdf7fd",
       "timestamp": "2026-04-14T00:34:17.617Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 200,
+      "price": 0.133816,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "92bda6c4abf5b1e759cacef174f3ec3d1c78f49874d11064a2413518721c2424",
+      "timestamp": "2026-04-14T06:39:46.511Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 200,
+      "price": 0.129993,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "b638b0f79edf2fb089758cf8c3808478a5508823b1f02c1a96fde2fa9d38c25c",
+      "timestamp": "2026-04-14T06:41:11.550Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.148097,
+      "pnl": 3.6208000000000027,
+      "pnlPercent": 13.92690375635612,
+      "txHash": "6a5d3d833da1998e0d18fd8c2cd7293f8d32c316267ed55b296723140e04f408",
+      "timestamp": "2026-04-14T06:42:16.452Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.165014,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "e24d67f72bb9cd4074ecfef1b8f79295680d29dc96352866d48e94b6c9ad9abc",
+      "timestamp": "2026-04-14T06:44:41.449Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.154387,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "ac258e1c9b8c3e52ea86b8ec9a4de678f39f949b79446f3dc9472822ac571ceb",
+      "timestamp": "2026-04-14T06:45:56.450Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 200,
+      "price": 0.157729,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "315217fd9f0ec02c5c3bea8aac416cc8e509719a30ad6c353c4ba2a95371f6cf",
+      "timestamp": "2026-04-14T06:47:06.550Z"
     }
   ],
-  "totalPnL": 9.429399999999998,
-  "winningTrades": 2,
+  "totalPnL": 13.0502,
+  "winningTrades": 3,
   "losingTrades": 0,
   "lastPosition": null,
-  "lastTradeTime": 1776126857617,
-  "position": null
+  "lastTradeTime": 1776149226550,
+  "position": {
+    "side": "SELL",
+    "amount": 200,
+    "entryPrice": 0.157729,
+    "timestamp": "2026-04-14T06:47:06.550Z"
+  }
 }
