@@ -22,11 +22,10 @@ const el = {
   btnToggle: document.getElementById('btn-agent-toggle'),
   toggleKnob: document.getElementById('el-toggle-knob'),
   totalBalance: document.getElementById('el-total-balance'),
+  balanceDetail: document.getElementById('el-balance-detail'),
   pnl: document.getElementById('el-24h-pnl'),
   winRate: document.getElementById('el-win-rate'),
   price: document.getElementById('el-current-price'),
-  chartFill: document.getElementById('chart-path-fill'),
-  chartLine: document.getElementById('chart-path-line'),
   ledger: document.getElementById('el-ledger-tbody')
 };
 
@@ -35,19 +34,17 @@ const el = {
 // ══════════════════════════════════════
 let isTrading = false;
 let latestPrice = 0;
-let previousPrice = 0;       // For smooth interpolation
-let displayPrice = 0;         // Currently displayed (animated) price
+let previousPrice = 0;
+let displayPrice = 0;
 let prices = [];
 let currentWalletAddress = '';
 let currentHistory = [];
 let cachedBalances = { xlm: 0, usdc: 0 };
-let currentPosition = null;   // Current open trade position
-let currentAnalysis = null;   // Current analysis (thoughts)
+let currentPosition = null;
+let currentAnalysis = null;
 
-
-// ── Heartbeat (micro-animation) ──
+// ── Heartbeat ──
 let heartbeatInterval = null;
-let priceInterpolationFrame = null;
 let lastSSETime = 0;
 
 // ══════════════════════════════════════
@@ -61,18 +58,29 @@ const fmtAddress = (addr) => addr ? `${addr.slice(0,5)}...${addr.slice(-4)}` : '
 // Bootstrap
 // ══════════════════════════════════════
 async function init() {
+  console.log('[StellarAgent] Starting init...');
   await fetchSkillsStatus();
   await fetchStatus();
   setupSSE();
   setupInteractions();
   startHeartbeat();
+  
+  // ═══ PERIODIC SYNC — poll backend every 5s to keep UI in sync ═══
+  setInterval(async () => {
+    try {
+      await fetchSkillsStatus();
+      await fetchStatus();
+    } catch(e) { /* silent */ }
+  }, 5000);
+  
+  console.log('[StellarAgent] Init complete.');
 }
 
 // ══════════════════════════════════════
 // Heartbeat — Makes everything feel ALIVE
 // ══════════════════════════════════════
 function startHeartbeat() {
-  // 1) Live clock — updates every second ONLY IF trading
+  // 1) Live clock — updates every second. Shows time if trading, --:--:-- if idle
   setInterval(() => {
     if (el.pulse) {
       if (isTrading) {
@@ -85,29 +93,21 @@ function startHeartbeat() {
     }
   }, 1000);
 
-  // 2) Price micro-animation — smooth interpolation between real ticks
-  //    Adds tiny random jitter to make chart look alive between SSE updates
+  // 2) Price micro-jitter when trading (makes chart feel alive between SSE ticks)
   heartbeatInterval = setInterval(() => {
     if (latestPrice <= 0 || !isTrading) return;
-    
-    // Calculate time since last real SSE update
     const elapsed = Date.now() - lastSSETime;
-    
-    // Only add micro-jitter if more than 2 seconds since last real update
     if (elapsed > 2000 && elapsed < 30000) {
-      // Micro-jitter: ±0.002% of price (tiny, natural-looking random walk)
       const jitter = latestPrice * (Math.random() - 0.5) * 0.00004;
       displayPrice = latestPrice + jitter;
-      
-      // Push display price to chart (only visual, not stored)
       updatePriceTickDisplay(displayPrice);
     }
   }, 1000);
 
-  // 3) Position P&L live update — recalculate every 2s against latest price
+  // 3) Position P&L live update every 2s
   setInterval(() => {
     if (currentPosition && latestPrice > 0) {
-      renderActivePosition(currentPosition);
+      renderActivePosition(currentPosition, currentAnalysis);
     }
   }, 2000);
 }
@@ -136,7 +136,7 @@ async function fetchStatus() {
       }
     }
   } catch (e) {
-    console.error('Failed to fetch /status', e);
+    console.error('[StellarAgent] Failed to fetch /status', e);
   }
 }
 
@@ -177,22 +177,27 @@ async function fetchSkillsStatus() {
       const winRate = totalTrades > 0 ? ((tradeData.winningTrades || 0) / totalTrades) * 100 : 0;
       if (el.winRate) el.winRate.innerText = totalTrades > 0 ? `${winRate.toFixed(0)}%` : '—';
       
-      // Current Position (for Active Trades widget)
+      // Current Position
       currentPosition = tradeData.position || null;
-      currentAnalysis = data.analysis || null;
-      renderActivePosition(currentPosition, currentAnalysis);
       
       // Transaction History
       const historyArray = tradeData.trades || [];
       if (el.ledger) renderLedger(historyArray);
     }
+    
+    // ═══ ANALYSIS DATA ═══
+    currentAnalysis = data.analysis || null;
+    
+    // Always re-render active trades panel with latest data
+    renderActivePosition(currentPosition, currentAnalysis);
+    
   } catch (e) {
-    console.error('Failed to fetch /skills-status', e);
+    console.error('[StellarAgent] Failed to fetch /skills-status', e);
   }
 }
 
 // ══════════════════════════════════════
-// Price Display (smooth animated update)
+// Price Display
 // ══════════════════════════════════════
 function updatePriceTickDisplay(price) {
   if (!el.price) return;
@@ -215,6 +220,11 @@ function updateTotalBalance(xlm, usdc) {
   if (!el.totalBalance) return;
   const total = (xlm * latestPrice) + usdc;
   el.totalBalance.innerText = fmtCurrency(total);
+  
+  // Show XLM + USDC breakdown
+  if (el.balanceDetail) {
+    el.balanceDetail.innerText = `${xlm.toFixed(2)} XLM · ${usdc.toFixed(2)} USDC`;
+  }
 }
 
 function updateAssetAllocation(xlm, usdc, price) {
@@ -265,7 +275,7 @@ function updateTradingUI() {
     }
   }
   
-  // Re-render position wrapper to reflect Idle/Scanning text
+  // Re-render position panel
   renderActivePosition(currentPosition, currentAnalysis);
 }
 
@@ -278,15 +288,17 @@ function renderActivePosition(position, analysis) {
   if (!position) {
     if (el.tradesCount) el.tradesCount.innerText = '00';
     if (!isTrading) {
+      // ── IDLE STATE ──
       el.tradesList.innerHTML = `
         <div class="text-center py-3 space-y-1 opacity-50">
           <div class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">System Idle</div>
           <div class="text-[9px] text-on-surface-variant/50">Click Execute to start trading</div>
         </div>`;
     } else {
-      if (analysis && analysis.confluence && analysis.indicators) {
+      // ── TRADING / SCANNING STATE ──
+      if (analysis && analysis.confluence) {
         const conf = analysis.confluence;
-        const ind = analysis.indicators;
+        const ind = analysis.indicators || {};
         
         let phaseColor = 'on-surface-variant';
         if (conf.phase === 'ACCUMULATION') phaseColor = 'emerald';
@@ -300,20 +312,20 @@ function renderActivePosition(position, analysis) {
           <div class="space-y-2.5">
             <div class="flex justify-between items-center bg-surface-container rounded px-2 py-1 border border-on-surface-variant/10">
               <span class="text-[8px] text-on-surface-variant font-black uppercase tracking-widest">Phase</span>
-              <span class="text-[9px] text-${phaseColor}-400 font-black uppercase tracking-widest shadow-sm">${conf.phase || 'SCANNING...'}</span>
+              <span class="text-[9px] text-${phaseColor}-400 font-black uppercase tracking-widest">${conf.phase || 'SCANNING...'}</span>
             </div>
             
             <div class="grid grid-cols-3 gap-1">
               <div class="bg-surface-container/30 border border-on-surface-variant/5 rounded px-1 py-1.5 text-center">
-                <div class="text-[7px] text-on-surface-variant/70 mb-[2px] font-bold uppercase">EMA Trend</div>
+                <div class="text-[7px] text-on-surface-variant/70 mb-[2px] font-bold uppercase">EMA</div>
                 <div class="text-[9px] text-${getColor(ind.ema?.signal)}-400 font-black">${ind.ema?.signal || '-'}</div>
               </div>
               <div class="bg-surface-container/30 border border-on-surface-variant/5 rounded px-1 py-1.5 text-center">
-                <div class="text-[7px] text-on-surface-variant/70 mb-[2px] font-bold uppercase">RSI(8)</div>
+                <div class="text-[7px] text-on-surface-variant/70 mb-[2px] font-bold uppercase">RSI</div>
                 <div class="text-[9px] text-${getColor(ind.rsi?.signal)}-400 font-black">${ind.rsi?.signal || '-'}</div>
               </div>
               <div class="bg-surface-container/30 border border-on-surface-variant/5 rounded px-1 py-1.5 text-center">
-                <div class="text-[7px] text-on-surface-variant/70 mb-[2px] font-bold uppercase">Mean-Rev</div>
+                <div class="text-[7px] text-on-surface-variant/70 mb-[2px] font-bold uppercase">MR</div>
                 <div class="text-[9px] text-${getColor(ind.meanReversion?.signal)}-400 font-black">${ind.meanReversion?.signal || '-'}</div>
               </div>
             </div>
@@ -331,14 +343,14 @@ function renderActivePosition(position, analysis) {
               <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
               Scanning market...
             </div>
-            <div class="text-[9px] text-on-surface-variant/50">Fetching analytical models</div>
+            <div class="text-[9px] text-on-surface-variant/50">Loading indicators...</div>
           </div>`;
       }
     }
     return;
   }
   
-  // We have an active position
+  // ── ACTIVE POSITION ──
   if (el.tradesCount) el.tradesCount.innerText = '01';
   
   const isBuy = position.side === 'BUY';
@@ -346,7 +358,6 @@ function renderActivePosition(position, analysis) {
   const amount = position.amount || 0;
   const entryTime = position.timestamp ? new Date(position.timestamp).toLocaleTimeString('en-US', { hour12: false }) : '--:--:--';
   
-  // Calculate live unrealized P&L
   let unrealizedPnl = 0;
   let pnlPct = 0;
   if (latestPrice > 0 && entryPrice > 0) {
@@ -413,7 +424,6 @@ function renderLedger(history) {
     const pnlColor = hasPnl ? (pnlVal >= 0 ? 'emerald-400' : 'red-400') : 'on-surface-variant';
     const pnlSign = hasPnl && pnlVal >= 0 ? '+' : '';
     
-    // Determine trade label
     let typeLabel = trade.action;
     let typeBg = isBuy ? 'emerald' : 'red';
     
@@ -439,57 +449,72 @@ function renderLedger(history) {
 // ══════════════════════════════════════
 let tvChart = null;
 let tvSeries = null;
+let chartRetryTimer = null;
 
 function renderChart() {
   const container = document.getElementById('tv-chart');
-  if (!container || typeof LightweightCharts === 'undefined' || !window.fullPricesData) return;
+  if (!container) return;
+  
+  // If LightweightCharts CDN hasn't loaded yet, retry in 500ms
+  if (typeof LightweightCharts === 'undefined') {
+    if (!chartRetryTimer) {
+      chartRetryTimer = setInterval(() => {
+        if (typeof LightweightCharts !== 'undefined') {
+          clearInterval(chartRetryTimer);
+          chartRetryTimer = null;
+          renderChart();
+        }
+      }, 500);
+    }
+    return;
+  }
+  
+  if (!window.fullPricesData || window.fullPricesData.length === 0) return;
   
   if (!tvChart) {
     tvChart = LightweightCharts.createChart(container, {
-      autoSize: true, // Let TradingView handle component resizing
+      autoSize: true,
       layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#d3c5ac' },
-      grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
-      timeScale: { timeVisible: true, secondsVisible: false, borderColor: 'rgba(255,255,255,0.1)' },
-      rightPriceScale: { borderColor: 'rgba(255,255,255,0.1)' },
+      grid: { vertLines: { color: 'rgba(255,255,255,0.04)' }, horzLines: { color: 'rgba(255,255,255,0.04)' } },
+      timeScale: { timeVisible: true, secondsVisible: true, borderColor: 'rgba(255,255,255,0.08)' },
+      rightPriceScale: { borderColor: 'rgba(255,255,255,0.08)' },
       crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
     });
     
-    // Create Binance-style Candlestick
     tvSeries = tvChart.addCandlestickSeries({
       upColor: '#10b981', downColor: '#ef4444', 
       borderVisible: false, wickUpColor: '#10b981', wickDownColor: '#ef4444'
     });
   }
   
-  // Transform ticks into pseudo OHLC candles
+  // Build OHLC candles from tick data
   const cData = [];
   window.fullPricesData.forEach((dp, i, arr) => {
     const time = Math.floor(new Date(dp.timestamp).getTime() / 1000);
     const close = dp.price;
     const open = i === 0 ? close : arr[i-1].price;
     const isUp = close >= open;
-    const noise = close * 0.0015; // Provide fake wick to make it look like a real candle
+    const noise = close * 0.0015;
     cData.push({
-      time: time,
-      open: open,
+      time,
+      open,
       high: Math.max(open, close) + (isUp ? noise : noise*0.5),
       low: Math.min(open, close) - (!isUp ? noise : noise*0.5),
-      close: close
+      close
     });
   });
   
-  // LightweightCharts requires strictly ascending unique times
+  // Deduplicate and sort (LightweightCharts requires unique ascending times)
   const uniqueData = [];
   const timeSet = new Set();
   cData.forEach(c => {
-    // If times collide (same second), add a slight jitter, or just skip. We will skip for safety.
-    if(!timeSet.has(c.time)) {
-       timeSet.add(c.time);
-       uniqueData.push(c);
+    if (!timeSet.has(c.time)) {
+      timeSet.add(c.time);
+      uniqueData.push(c);
     }
   });
-  
   uniqueData.sort((a,b) => a.time - b.time);
+  
   if (uniqueData.length > 0) {
     tvSeries.setData(uniqueData);
   }
@@ -659,9 +684,10 @@ function setupSSE() {
         prices.push(latestPrice);
         if (prices.length > 100) prices.shift();
         
+        // Keep fullPricesData in sync for chart
         if (window.fullPricesData) {
-           window.fullPricesData.push(msg.data);
-           if (window.fullPricesData.length > 100) window.fullPricesData.shift();
+          window.fullPricesData.push({ price: msg.data.price, timestamp: msg.timestamp || new Date().toISOString() });
+          if (window.fullPricesData.length > 100) window.fullPricesData.shift();
         }
         
         updatePriceDisplay(latestPrice, msg.data.change || 0);
@@ -691,12 +717,11 @@ function setupSSE() {
       if (msg.type === 'TRADE') {
         fetchSkillsStatus();
         fetchStatus();
-        showToast(`⚡ ${msg.data.action} ${msg.data.amount} XLM @ $${(msg.data.price || 0).toFixed(5)}`);
+        showToast(`Trade executed: ${msg.data.action} ${msg.data.amount} XLM`);
       }
       
-      // PIPELINE — show analysis decisions in latency field
+      // PIPELINE — analysis completed
       if (msg.type === 'PIPELINE' && msg.data.status === 'done' && msg.data.name === 'Technical Analysis') {
-        // Analysis complete — refresh to get latest position state
         fetchSkillsStatus();
       }
       
@@ -710,7 +735,6 @@ function setupSSE() {
       el.status.innerText = 'OFFLINE';
       el.status.className = 'text-[11px] font-bold text-red-400 uppercase';
     }
-    // Reconnect after 5 seconds
     setTimeout(() => {
       if (source.readyState === EventSource.CLOSED) setupSSE();
     }, 5000);
