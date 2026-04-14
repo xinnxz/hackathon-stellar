@@ -62,16 +62,128 @@
       "pnlPercent": null,
       "txHash": "77c83bcb3851f77d818b319a3abfaf253a92a95b88cc61815714f5b7f3cddcc9",
       "timestamp": "2026-04-14T08:25:57.531Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.148181,
+      "pnl": 1.3236000000000008,
+      "pnlPercent": 9.808440475749384,
+      "txHash": "6ebcea8951a05bc75edd37857b692adfcb813b9da4a9cbd6e6b3fb12ea126f7f",
+      "timestamp": "2026-04-14T09:18:33.421Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.133548,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "c99ec270aea05d7afdbaaec36665642dac28854dcabac4f58133d32ebafde114",
+      "timestamp": "2026-04-14T09:23:29.519Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.148641,
+      "pnl": 1.5092999999999979,
+      "pnlPercent": 11.301554497259396,
+      "txHash": "e051885cc246f5479d1157fa5988d2617a685c3381e2d839ab085fe699215c05",
+      "timestamp": "2026-04-14T09:51:02.425Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.134743,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "219e811a30840990a4b6eb3a9413a59c7b683637cddb1f26b0ab8e03da2d1320",
+      "timestamp": "2026-04-14T09:58:03.416Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.148964,
+      "pnl": 1.4221000000000021,
+      "pnlPercent": 10.55416607912843,
+      "txHash": "ee436b40275230a3d9769e0100e109740ec8eecd8e9ff228f92e5ce82ea8e1b8",
+      "timestamp": "2026-04-14T10:00:48.511Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.167153,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "0f980faff5a8d05549c06552323ff63a2152cded1156e9089838466f7ca6be1a",
+      "timestamp": "2026-04-14T10:09:34.412Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.14485,
+      "pnl": 2.230299999999998,
+      "pnlPercent": 13.342865518417247,
+      "txHash": "103b4117e3a3ac4ab23ae86dc770009c3ae598269450348a03a4cfd76f439850",
+      "timestamp": "2026-04-14T10:11:34.510Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.159766,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "28719ff8fbaa5c0e943dfea0ae9b32c8e5869d8a825d8690fb2b8b492a16b2a6",
+      "timestamp": "2026-04-14T10:16:00.812Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.143546,
+      "pnl": 1.621999999999998,
+      "pnlPercent": 10.152347808670168,
+      "txHash": "9505d518f8f10f8395540b3dfcf337447e386533256c7f4c870f3f641d1e1091",
+      "timestamp": "2026-04-14T10:18:00.509Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.129788,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "3fc5d65fd27b45234964a2559c1e6f10d5b1d81a7316cba958bda5afb85f32fc",
+      "timestamp": "2026-04-14T10:19:20.511Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.147015,
+      "pnl": 1.7227000000000032,
+      "pnlPercent": 13.273183961537303,
+      "txHash": "000d2ddf4ccd6c68e1f23cd54566706f21632e0eb0e17740d1811fd57d9361fb",
+      "timestamp": "2026-04-14T10:21:15.507Z"
+    },
+    {
+      "action": "SELL",
+      "amount": 100,
+      "price": 0.162884,
+      "pnl": null,
+      "pnlPercent": null,
+      "txHash": "3402c44a53208cfd2e2f3a335a6db8d9ad5a1477d54d20f0deecd15be7db4b99",
+      "timestamp": "2026-04-14T10:22:31.508Z"
+    },
+    {
+      "action": "BUY",
+      "amount": 100,
+      "price": 0.144948,
+      "pnl": 1.7935999999999996,
+      "pnlPercent": 11.011517398885093,
+      "txHash": "bc9e20083bbef8cbd97e9b15a61653de7b673c4df9c0e6c882c060eecf8d5601",
+      "timestamp": "2026-04-14T10:25:31.411Z"
     }
   ],
-  "totalPnL": 5.227399999999998,
-  "winningTrades": 3,
+  "totalPnL": 16.851,
+  "winningTrades": 10,
   "losingTrades": 0,
-  "position": {
-    "side": "BUY",
-    "amount": 100,
-    "entryPrice": 0.134945,
-    "timestamp": "2026-04-14T08:25:57.530Z"
-  },
-  "lastTradeTime": 1776155157531
+  "position": null,
+  "lastTradeTime": 1776162331412
 }

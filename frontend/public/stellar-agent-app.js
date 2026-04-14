@@ -242,7 +242,11 @@ function updateAssetAllocation(xlm, usdc, price) {
   if (el.assetXlmCircle) {
     const circumference = 408;
     el.assetXlmCircle.style.strokeDashoffset = circumference - (circumference * (xlmPercent / 100));
-    if (el.assetUsdcCircle) el.assetUsdcCircle.style.strokeDashoffset = circumference - (circumference * (usdcPercent / 100));
+    if (el.assetUsdcCircle) {
+      el.assetUsdcCircle.style.strokeDashoffset = circumference - (circumference * (usdcPercent / 100));
+      el.assetUsdcCircle.style.transformOrigin = "80px 80px";
+      el.assetUsdcCircle.style.transform = `rotate(${(xlmPercent / 100) * 360}deg)`;
+    }
   }
 }
 
