@@ -1,0 +1,124 @@
+/* ═══════════════════════════════════
+   NewDashboard Scope Reset
+   Neutralize ALL old index.css styles
+   ═══════════════════════════════════ */
+
+/* Root scope */
+.new-dashboard {
+  font-family: 'Inter', sans-serif !important;
+  background-color: #07151d !important;
+  background-image: none !important;
+  color: #d6e4f0 !important;
+  line-height: 1.5 !important;
+  overflow: hidden !important;
+  height: 100vh !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Reset ALL child elements from old styles */
+.new-dashboard *,
+.new-dashboard *::before,
+.new-dashboard *::after {
+  box-sizing: border-box;
+}
+
+/* Kill old body/root constraints that bleed in */
+.new-dashboard header {
+  all: unset;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 1.5rem;
+  height: 4rem;
+  background-color: #07151d;
+  position: fixed;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid rgba(79, 70, 50, 0.1);
+  font-family: 'Inter', sans-serif;
+  color: #d6e4f0;
+}
+
+/* Override old .btn styles */
+.new-dashboard button {
+  font-family: 'Inter', sans-serif;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Override old a styles */
+.new-dashboard a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Override old table styles */
+.new-dashboard table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.new-dashboard th,
+.new-dashboard td {
+  padding: 0;
+  text-align: left;
+  font-weight: inherit;
+}
+
+/* Custom scrollbar matching Design 5 */
+.new-dashboard ::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.new-dashboard ::-webkit-scrollbar-track {
+  background: #07151d;
+}
+
+.new-dashboard ::-webkit-scrollbar-thumb {
+  background: #1f2c34;
+  border-radius: 2px;
+}
+
+/* Mono utility */
+.new-dashboard .mono {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Material Symbols override (reset font-size conflicts) */
+.new-dashboard .material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  font-size: 20px;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+}
+
+/* Override old h2, h3 styles */
+.new-dashboard h2,
+.new-dashboard h3 {
+  all: unset;
+}
+
+/* Override old img styles */
+.new-dashboard img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Override old svg styles */
+.new-dashboard svg {
+  overflow: visible;
+}
