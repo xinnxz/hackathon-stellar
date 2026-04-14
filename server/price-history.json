@@ -1,621 +1,5 @@
 [
   {
-    "price": 0.168423,
-    "timestamp": "2026-04-14T00:26:56.651Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.170053,
-    "timestamp": "2026-04-14T00:27:11.664Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.172889,
-    "timestamp": "2026-04-14T00:27:26.789Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.173671,
-    "timestamp": "2026-04-14T00:27:43.585Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.169197,
-    "timestamp": "2026-04-14T00:27:57.061Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.165942,
-    "timestamp": "2026-04-14T00:28:11.981Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.16164,
-    "timestamp": "2026-04-14T00:28:28.532Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.157084,
-    "timestamp": "2026-04-14T00:28:41.956Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.153571,
-    "timestamp": "2026-04-14T00:28:58.642Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.151026,
-    "timestamp": "2026-04-14T00:29:12.392Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.149776,
-    "timestamp": "2026-04-14T00:29:28.760Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.14885,
-    "timestamp": "2026-04-14T00:29:42.050Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.147286,
-    "timestamp": "2026-04-14T00:29:57.425Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.146244,
-    "timestamp": "2026-04-14T00:30:13.807Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.144588,
-    "timestamp": "2026-04-14T00:30:28.307Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.147178,
-    "timestamp": "2026-04-14T00:30:44.005Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.145655,
-    "timestamp": "2026-04-14T00:30:58.275Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.148811,
-    "timestamp": "2026-04-14T00:31:12.227Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.148979,
-    "timestamp": "2026-04-14T00:31:28.823Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.150957,
-    "timestamp": "2026-04-14T00:31:42.319Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.151244,
-    "timestamp": "2026-04-14T00:31:58.955Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.149216,
-    "timestamp": "2026-04-14T00:32:12.225Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.151244,
-    "timestamp": "2026-04-14T00:32:29.049Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.14945,
-    "timestamp": "2026-04-14T00:32:43.581Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.149187,
-    "timestamp": "2026-04-14T00:32:58.966Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.147843,
-    "timestamp": "2026-04-14T00:33:14.091Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.140198,
-    "timestamp": "2026-04-14T00:33:27.670Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.135592,
-    "timestamp": "2026-04-14T00:33:44.380Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.125893,
-    "timestamp": "2026-04-14T00:33:58.829Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.122797,
-    "timestamp": "2026-04-14T00:34:13.899Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.119273,
-    "timestamp": "2026-04-14T00:34:28.604Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.118681,
-    "timestamp": "2026-04-14T00:34:43.807Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.115833,
-    "timestamp": "2026-04-14T00:34:59.385Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.113358,
-    "timestamp": "2026-04-14T00:35:13.820Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.115504,
-    "timestamp": "2026-04-14T00:35:28.864Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.116909,
-    "timestamp": "2026-04-14T00:35:43.698Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.122113,
-    "timestamp": "2026-04-14T00:35:59.205Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.124273,
-    "timestamp": "2026-04-14T00:36:13.663Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.126887,
-    "timestamp": "2026-04-14T00:36:29.374Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.131448,
-    "timestamp": "2026-04-14T00:36:59.038Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.132448,
-    "timestamp": "2026-04-14T00:37:29.399Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.133658,
-    "timestamp": "2026-04-14T00:37:59.536Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.136947,
-    "timestamp": "2026-04-14T00:38:29.414Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.137779,
-    "timestamp": "2026-04-14T00:38:54.116Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.138057,
-    "timestamp": "2026-04-14T00:39:14.295Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.136652,
-    "timestamp": "2026-04-14T00:39:44.178Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.135155,
-    "timestamp": "2026-04-14T00:40:14.475Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.133518,
-    "timestamp": "2026-04-14T00:40:29.717Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.13148,
-    "timestamp": "2026-04-14T00:40:58.967Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.131386,
-    "timestamp": "2026-04-14T06:38:55.552Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.132623,
-    "timestamp": "2026-04-14T06:39:11.217Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.13337,
-    "timestamp": "2026-04-14T06:39:21.563Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.133816,
-    "timestamp": "2026-04-14T06:39:41.539Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.131807,
-    "timestamp": "2026-04-14T06:40:11.466Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.131944,
-    "timestamp": "2026-04-14T06:40:21.089Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.131954,
-    "timestamp": "2026-04-14T06:40:36.137Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.131125,
-    "timestamp": "2026-04-14T06:40:51.291Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.129993,
-    "timestamp": "2026-04-14T06:41:06.210Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.135545,
-    "timestamp": "2026-04-14T06:41:21.368Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.143111,
-    "timestamp": "2026-04-14T06:41:36.336Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.147922,
-    "timestamp": "2026-04-14T06:41:51.483Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.148097,
-    "timestamp": "2026-04-14T06:42:11.744Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.152158,
-    "timestamp": "2026-04-14T06:42:36.480Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.154045,
-    "timestamp": "2026-04-14T06:42:51.260Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.15385,
-    "timestamp": "2026-04-14T06:43:06.494Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.155291,
-    "timestamp": "2026-04-14T06:43:21.338Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.156756,
-    "timestamp": "2026-04-14T06:43:36.331Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.15771,
-    "timestamp": "2026-04-14T06:43:51.565Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.160344,
-    "timestamp": "2026-04-14T06:44:06.627Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.16073,
-    "timestamp": "2026-04-14T06:44:21.721Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.165014,
-    "timestamp": "2026-04-14T06:44:36.567Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.164941,
-    "timestamp": "2026-04-14T06:44:51.630Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.167144,
-    "timestamp": "2026-04-14T06:45:06.553Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.160556,
-    "timestamp": "2026-04-14T06:45:21.206Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.158686,
-    "timestamp": "2026-04-14T06:45:36.339Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.154387,
-    "timestamp": "2026-04-14T06:45:51.404Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.151289,
-    "timestamp": "2026-04-14T06:46:06.512Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.149768,
-    "timestamp": "2026-04-14T06:46:22.912Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.152528,
-    "timestamp": "2026-04-14T06:46:36.585Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.157729,
-    "timestamp": "2026-04-14T06:46:51.481Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.156704,
-    "timestamp": "2026-04-14T06:47:22.020Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.158396,
-    "timestamp": "2026-04-14T06:47:36.868Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.161927,
-    "timestamp": "2026-04-14T06:47:51.698Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.162591,
-    "timestamp": "2026-04-14T06:48:06.793Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.162376,
-    "timestamp": "2026-04-14T06:48:21.952Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.165992,
-    "timestamp": "2026-04-14T06:48:38.048Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.169671,
-    "timestamp": "2026-04-14T06:48:51.848Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
-    "price": 0.17368,
-    "timestamp": "2026-04-14T06:49:06.786Z",
-    "paid": true,
-    "usdcPaid": 0.01,
-    "protocol": "MPP Charge SDK"
-  },
-  {
     "price": 0.174824,
     "timestamp": "2026-04-14T06:49:22.062Z",
     "paid": true,
@@ -695,6 +79,622 @@
   {
     "price": 0.141506,
     "timestamp": "2026-04-14T06:52:02.218Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.137161,
+    "timestamp": "2026-04-14T06:52:17.486Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.135098,
+    "timestamp": "2026-04-14T06:52:32.665Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.133661,
+    "timestamp": "2026-04-14T06:52:47.402Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.130795,
+    "timestamp": "2026-04-14T06:53:03.649Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.12962,
+    "timestamp": "2026-04-14T06:54:18.589Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.133795,
+    "timestamp": "2026-04-14T06:54:33.237Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.139873,
+    "timestamp": "2026-04-14T06:54:49.215Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.145789,
+    "timestamp": "2026-04-14T06:55:03.749Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.1481,
+    "timestamp": "2026-04-14T06:55:17.607Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.149415,
+    "timestamp": "2026-04-14T06:55:33.843Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.149648,
+    "timestamp": "2026-04-14T06:55:47.547Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.151412,
+    "timestamp": "2026-04-14T06:56:04.047Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.153607,
+    "timestamp": "2026-04-14T06:56:13.310Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.15545,
+    "timestamp": "2026-04-14T06:56:28.524Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.15624,
+    "timestamp": "2026-04-14T06:56:43.197Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.159956,
+    "timestamp": "2026-04-14T06:56:58.735Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.162362,
+    "timestamp": "2026-04-14T06:57:13.227Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.167161,
+    "timestamp": "2026-04-14T06:57:28.482Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.170744,
+    "timestamp": "2026-04-14T06:57:43.694Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.173937,
+    "timestamp": "2026-04-14T06:57:58.251Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.176216,
+    "timestamp": "2026-04-14T06:58:13.456Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.176442,
+    "timestamp": "2026-04-14T06:58:28.479Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.172806,
+    "timestamp": "2026-04-14T06:58:43.564Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.168809,
+    "timestamp": "2026-04-14T06:58:58.597Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.166318,
+    "timestamp": "2026-04-14T06:59:13.633Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.161926,
+    "timestamp": "2026-04-14T06:59:28.450Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.157557,
+    "timestamp": "2026-04-14T06:59:43.621Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.153097,
+    "timestamp": "2026-04-14T06:59:58.958Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.150497,
+    "timestamp": "2026-04-14T07:00:13.694Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.148068,
+    "timestamp": "2026-04-14T07:00:28.800Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.146534,
+    "timestamp": "2026-04-14T07:00:43.593Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.147335,
+    "timestamp": "2026-04-14T07:00:58.771Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.14834,
+    "timestamp": "2026-04-14T07:01:13.579Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.154326,
+    "timestamp": "2026-04-14T07:01:29.175Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.158092,
+    "timestamp": "2026-04-14T07:01:44.533Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.158338,
+    "timestamp": "2026-04-14T07:01:58.871Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.158482,
+    "timestamp": "2026-04-14T07:02:13.897Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.156387,
+    "timestamp": "2026-04-14T07:02:28.532Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.156066,
+    "timestamp": "2026-04-14T07:02:44.532Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.153421,
+    "timestamp": "2026-04-14T07:02:58.934Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.155098,
+    "timestamp": "2026-04-14T07:03:13.882Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.153906,
+    "timestamp": "2026-04-14T07:03:28.616Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.155052,
+    "timestamp": "2026-04-14T07:03:44.423Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.153296,
+    "timestamp": "2026-04-14T07:03:59.113Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.150722,
+    "timestamp": "2026-04-14T07:04:13.923Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.151882,
+    "timestamp": "2026-04-14T07:04:29.313Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.152284,
+    "timestamp": "2026-04-14T07:04:43.784Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.149046,
+    "timestamp": "2026-04-14T07:04:59.708Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.127896,
+    "timestamp": "2026-04-14T07:19:05.520Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.126116,
+    "timestamp": "2026-04-14T07:19:20.070Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.124031,
+    "timestamp": "2026-04-14T07:19:35.318Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.125055,
+    "timestamp": "2026-04-14T07:19:50.677Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.124979,
+    "timestamp": "2026-04-14T07:20:05.632Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.126197,
+    "timestamp": "2026-04-14T07:20:20.219Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.127096,
+    "timestamp": "2026-04-14T07:20:35.920Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.12932,
+    "timestamp": "2026-04-14T07:20:50.409Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.131398,
+    "timestamp": "2026-04-14T07:21:06.244Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.13597,
+    "timestamp": "2026-04-14T07:21:20.235Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.140355,
+    "timestamp": "2026-04-14T07:21:35.474Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.14443,
+    "timestamp": "2026-04-14T07:21:50.339Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.149827,
+    "timestamp": "2026-04-14T07:22:05.494Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.154554,
+    "timestamp": "2026-04-14T07:22:22.106Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.154284,
+    "timestamp": "2026-04-14T07:22:35.733Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.15793,
+    "timestamp": "2026-04-14T07:22:50.760Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.162828,
+    "timestamp": "2026-04-14T07:23:05.438Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.167911,
+    "timestamp": "2026-04-14T07:23:21.840Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.172021,
+    "timestamp": "2026-04-14T07:23:35.576Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.175772,
+    "timestamp": "2026-04-14T07:23:52.056Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.178625,
+    "timestamp": "2026-04-14T07:24:05.619Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.176657,
+    "timestamp": "2026-04-14T07:24:21.563Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.171333,
+    "timestamp": "2026-04-14T07:24:35.802Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.165738,
+    "timestamp": "2026-04-14T07:24:52.324Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.156974,
+    "timestamp": "2026-04-14T07:25:05.836Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.150467,
+    "timestamp": "2026-04-14T07:25:20.903Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.1443,
+    "timestamp": "2026-04-14T07:25:37.266Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.138894,
+    "timestamp": "2026-04-14T07:25:52.363Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.136703,
+    "timestamp": "2026-04-14T07:26:07.412Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.136526,
+    "timestamp": "2026-04-14T07:26:22.019Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.140057,
+    "timestamp": "2026-04-14T07:26:35.890Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.14464,
+    "timestamp": "2026-04-14T07:26:52.169Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.144841,
+    "timestamp": "2026-04-14T07:27:05.997Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.147069,
+    "timestamp": "2026-04-14T07:27:22.305Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.150523,
+    "timestamp": "2026-04-14T07:27:36.262Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.155713,
+    "timestamp": "2026-04-14T07:27:52.393Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.159884,
+    "timestamp": "2026-04-14T07:28:07.344Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.163644,
+    "timestamp": "2026-04-14T07:28:21.881Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.168563,
+    "timestamp": "2026-04-14T07:28:37.355Z",
+    "paid": true,
+    "usdcPaid": 0.01,
+    "protocol": "MPP Charge SDK"
+  },
+  {
+    "price": 0.173763,
+    "timestamp": "2026-04-14T07:28:51.991Z",
     "paid": true,
     "usdcPaid": 0.01,
     "protocol": "MPP Charge SDK"

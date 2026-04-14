@@ -1,40 +1,53 @@
 {
   "success": true,
-  "currentPrice": 0.141506,
+  "currentPrice": 0.173763,
   "dataPoints": 100,
   "indicators": {
     "ema": {
-      "signal": "SELL",
-      "reason": "Fast EMA below slow by 5.326%",
-      "value": -5.33
+      "signal": "BUY",
+      "reason": "EMA5 > EMA15 by 5.141%",
+      "value": 5.141
     },
     "rsi": {
-      "signal": "BUY",
-      "reason": "RSI 2.4 — oversold zone",
-      "value": 2.4
+      "signal": "SELL",
+      "reason": "RSI 100.0 — overbought",
+      "value": 100
     },
     "bb": {
-      "signal": "BUY",
-      "reason": "Price at lower BB (-12%)",
-      "value": -11.7
+      "signal": "HOLD",
+      "reason": "Within bands (84%)",
+      "value": 84.3
     },
-    "vwap": {
-      "signal": "BUY",
-      "reason": "4.80% below VWAP — undervalued",
-      "value": -4.8
+    "meanReversion": {
+      "signal": "SELL",
+      "reason": "11.93% above SMA20 — overvalued",
+      "value": 11.93
     }
   },
   "confluence": {
     "signal": "HOLD",
-    "confidence": 0.75,
+    "confidence": 0.5,
     "votes": {
-      "buy": 3,
-      "sell": 1,
-      "hold": 0
+      "buy": 1,
+      "sell": 2,
+      "hold": 1
     },
-    "reason": "No strong consensus: 3B/1S/0H (need 3/4)",
-    "trend": "DOWN",
+    "reason": "⏳ MARKUP: 1B/2S/1H — waiting for setup",
+    "positionSize": 0,
+    "phase": "MARKUP",
+    "keyLevels": {
+      "support": 0.13653,
+      "resistance": 0.17863,
+      "sma20": 0.15525,
+      "current": 0.17376
+    },
+    "risk": {
+      "entry": "0.17376",
+      "stopLoss": "0.17637",
+      "takeProfit": "0.17029",
+      "riskReward": "1:1.33"
+    },
     "hasPosition": false
   },
-  "timestamp": "2026-04-14T06:52:02.300Z"
+  "timestamp": "2026-04-14T07:28:52.090Z"
 }

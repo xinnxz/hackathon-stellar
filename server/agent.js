@@ -190,8 +190,9 @@ export class Agent {
 
       if (signal === 'BUY' || signal === 'SELL') {
         this.broadcast('PIPELINE', { step: 5, name: `Execute ${signal}`, status: 'running' });
-
-        const trade = await this.execSkill('stellar-trade/execute-trade.js', [signal, '200']);
+        // Position size from analysis (confidence-based: 100 or 200 XLM)
+        const posSize = analysis.confluence?.positionSize || 200;
+        const trade = await this.execSkill('stellar-trade/execute-trade.js', [signal, String(posSize)]);
 
         if (trade.success) {
           this.broadcast('TRADE', {

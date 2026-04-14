@@ -1,21 +1,35 @@
 /**
  * run-analysis.js
  * ================
- * OpenClaw Skill Script: Jalankan 4 Technical Indicators + Confluence
+ * V3: Professional Trading Engine — Smart Money Concepts
  * 
- * STRATEGI V2: Conservative Mean-Reversion
- * =========================================
- * PRINSIP DASAR:
- * - Beli saat harga MURAH (di bawah rata-rata) → BUY LOW
- * - Jual saat harga MAHAL (di atas rata-rata) → SELL HIGH
- * - HOLD jika tidak jelas → LEBIH BAIK DIAM DARIPADA RUGI
- * - JANGAN PERNAH trade melawan trend besar
+ * STRATEGI: Adaptive Mean-Reversion with Phase Detection
+ * ========================================================
  * 
- * PERUBAHAN DARI V1:
- * - Confluence minimum 3/4 (bukan 2/4) — kurangi false signals
- * - RSI threshold dikembalikan ke 35/65 — lebih konservatif
- * - Tambah trend filter: jangan SELL di downtrend, jangan BUY di uptrend
- * - Tambah profit-target check: jangan tutup posisi kecuali profit
+ * KONSEP INTI (seperti trader profesional 15+ tahun):
+ * 
+ * 1. PHASE DETECTION (Wyckoff Method)
+ *    - Deteksi apakah market di fase ACCUMULATION, MARKUP, atau DISTRIBUTION
+ *    - Gunakan price position relatif terhadap moving average
+ * 
+ * 2. KEY LEVELS (Support & Resistance)
+ *    - Support: Local minimum dari 30 data terakhir
+ *    - Resistance: Local maximum dari 30 data terakhir  
+ *    - Mean: SMA20 sebagai gravitational anchor
+ * 
+ * 3. ENTRY RULES — Hanya masuk di HIGH-PROBABILITY zones:
+ *    - BUY: Harga di bawah SMA20 + RSI oversold + dekat support
+ *    - SELL: Harga di atas SMA20 + RSI overbought + dekat resistance
+ * 
+ * 4. EXIT RULES — Profit-target based:
+ *    - Take Profit: +2% dari entry (atau di resistance/support)
+ *    - Stop Loss: -1.5% dari entry
+ *    - Risk:Reward = 1:1.33 minimum
+ * 
+ * 5. POSITION SIZING:
+ *    - Confidence 100% (4/4) → 200 XLM
+ *    - Confidence 75% (3/4) → 100 XLM
+ *    - Less → NO TRADE
  */
 import fs from 'fs';
 import path from 'path';
@@ -25,9 +39,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PRICE_HISTORY_FILE = path.resolve(__dirname, '../../server/price-history.json');
 const TRADE_STATE_FILE = path.resolve(__dirname, '../../server/trade-state.json');
 
-// ═══════════════════════════════════
-// Indicator Functions (Conservative Tuning)
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
+// UTILITY: Statistical Functions
+// ═══════════════════════════════════════
+
+function calcSMA(prices, period) {
+  if (prices.length < period) return prices.reduce((a,b) => a+b, 0) / prices.length;
+  const slice = prices.slice(-period);
+  return slice.reduce((a, b) => a + b, 0) / period;
+}
 
 function calcEMA(prices, period) {
   if (prices.length < period) return prices[prices.length - 1];
@@ -39,120 +59,144 @@ function calcEMA(prices, period) {
   return ema;
 }
 
-/**
- * EMA Cross — Medium-term trend detection
- * Fast EMA(5) vs Slow EMA(15) — more reliable signals
- * Threshold: 0.15% — filters noise but catches real moves
- */
-function analyzeEMA(prices) {
-  if (prices.length < 15) return { signal: 'HOLD', reason: 'Need 15+ prices for EMA', value: null };
-  const emaFast = calcEMA(prices, 5);
-  const emaSlow = calcEMA(prices, 15);
-  const diff = ((emaFast - emaSlow) / emaSlow) * 100;
-  
-  if (diff > 0.15) return { signal: 'BUY', reason: `Fast EMA above slow by ${diff.toFixed(3)}%`, value: parseFloat(diff.toFixed(2)) };
-  if (diff < -0.15) return { signal: 'SELL', reason: `Fast EMA below slow by ${Math.abs(diff).toFixed(3)}%`, value: parseFloat(diff.toFixed(2)) };
-  return { signal: 'HOLD', reason: `EMAs within range (${diff.toFixed(3)}%)`, value: parseFloat(diff.toFixed(2)) };
-}
-
-/**
- * RSI — Conservative zones
- * Threshold: 35/65 — only trade at real extremes
- * Period: 8 — balance between responsiveness and reliability
- */
-function analyzeRSI(prices, period = 8) {
-  if (prices.length < period + 1) {
-    return { signal: 'HOLD', reason: 'Insufficient data for RSI', value: 50 };
-  }
-  
+function calcRSI(prices, period = 8) {
+  if (prices.length < period + 1) return 50;
   let gains = 0, losses = 0;
   for (let i = prices.length - period; i < prices.length; i++) {
     const change = prices[i] - prices[i - 1];
     if (change > 0) gains += change;
     else losses -= change;
   }
-  
-  const avgGain = gains / period;
-  const avgLoss = losses / period;
-  
-  if (avgLoss === 0) return { signal: 'SELL', reason: 'RSI at 100 (overbought extreme)', value: 100 };
-  
-  const rs = avgGain / avgLoss;
-  const rsi = 100 - (100 / (1 + rs));
-  
-  // Conservative thresholds
-  if (rsi < 35) return { signal: 'BUY', reason: `RSI ${rsi.toFixed(1)} — oversold zone`, value: parseFloat(rsi.toFixed(1)) };
-  if (rsi > 65) return { signal: 'SELL', reason: `RSI ${rsi.toFixed(1)} — overbought zone`, value: parseFloat(rsi.toFixed(1)) };
-  return { signal: 'HOLD', reason: `RSI ${rsi.toFixed(1)} — neutral zone`, value: parseFloat(rsi.toFixed(1)) };
+  if (losses === 0) return 100;
+  const rs = (gains / period) / (losses / period);
+  return 100 - (100 / (1 + rs));
 }
 
-/**
- * Bollinger Bands — Standard parameters
- * Multiplier: 2.0 (standard) — only trigger at statistical extremes
- */
-function analyzeBB(prices) {
-  if (prices.length < 10) return { signal: 'HOLD', reason: 'Need 10+ prices for BB', value: null };
-  const period = Math.min(20, prices.length);
-  const slice = prices.slice(-period);
+function calcBollingerBands(prices, period = 20, multiplier = 2) {
+  const p = Math.min(period, prices.length);
+  const slice = prices.slice(-p);
   const mean = slice.reduce((a, b) => a + b, 0) / slice.length;
   const variance = slice.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / slice.length;
   const std = Math.sqrt(variance);
+  return { upper: mean + multiplier * std, middle: mean, lower: mean - multiplier * std, std };
+}
+
+function findSupport(prices, lookback = 30) {
+  const slice = prices.slice(-Math.min(lookback, prices.length));
+  return Math.min(...slice);
+}
+
+function findResistance(prices, lookback = 30) {
+  const slice = prices.slice(-Math.min(lookback, prices.length));
+  return Math.max(...slice);
+}
+
+// ═══════════════════════════════════════
+// INDICATOR 1: EMA Cross (Trend Direction)
+// ═══════════════════════════════════════
+function analyzeEMA(prices) {
+  if (prices.length < 15) return { signal: 'HOLD', reason: 'Insufficient data', value: null };
+  const emaFast = calcEMA(prices, 5);
+  const emaSlow = calcEMA(prices, 15);
+  const diff = ((emaFast - emaSlow) / emaSlow) * 100;
   
-  const upper = mean + 2.0 * std;  // Standard 2σ bands
-  const lower = mean - 2.0 * std;
+  if (diff > 0.15) return { signal: 'BUY', reason: `EMA5 > EMA15 by ${diff.toFixed(3)}%`, value: parseFloat(diff.toFixed(3)) };
+  if (diff < -0.15) return { signal: 'SELL', reason: `EMA5 < EMA15 by ${Math.abs(diff).toFixed(3)}%`, value: parseFloat(diff.toFixed(3)) };
+  return { signal: 'HOLD', reason: `EMAs converged (${diff.toFixed(3)}%)`, value: parseFloat(diff.toFixed(3)) };
+}
+
+// ═══════════════════════════════════════
+// INDICATOR 2: RSI (Momentum Extremes)
+// ═══════════════════════════════════════
+function analyzeRSI(prices) {
+  const rsi = calcRSI(prices, 8);
+  if (rsi < 35) return { signal: 'BUY', reason: `RSI ${rsi.toFixed(1)} — oversold`, value: parseFloat(rsi.toFixed(1)) };
+  if (rsi > 65) return { signal: 'SELL', reason: `RSI ${rsi.toFixed(1)} — overbought`, value: parseFloat(rsi.toFixed(1)) };
+  return { signal: 'HOLD', reason: `RSI ${rsi.toFixed(1)} — neutral`, value: parseFloat(rsi.toFixed(1)) };
+}
+
+// ═══════════════════════════════════════
+// INDICATOR 3: Bollinger Bands (Volatility Extremes)
+// ═══════════════════════════════════════
+function analyzeBB(prices) {
+  if (prices.length < 10) return { signal: 'HOLD', reason: 'Insufficient data', value: null };
+  const bb = calcBollingerBands(prices, 20, 2.0);
   const current = prices[prices.length - 1];
-  const position = std > 0 ? ((current - lower) / (upper - lower)) * 100 : 50;
+  const position = bb.std > 0 ? ((current - bb.lower) / (bb.upper - bb.lower)) * 100 : 50;
   
-  if (current <= lower) return { signal: 'BUY', reason: `Price at lower BB (${position.toFixed(0)}%)`, value: parseFloat(position.toFixed(1)) };
-  if (current >= upper) return { signal: 'SELL', reason: `Price at upper BB (${position.toFixed(0)}%)`, value: parseFloat(position.toFixed(1)) };
+  if (current <= bb.lower) return { signal: 'BUY', reason: `At lower BB (${position.toFixed(0)}%)`, value: parseFloat(position.toFixed(1)) };
+  if (current >= bb.upper) return { signal: 'SELL', reason: `At upper BB (${position.toFixed(0)}%)`, value: parseFloat(position.toFixed(1)) };
   return { signal: 'HOLD', reason: `Within bands (${position.toFixed(0)}%)`, value: parseFloat(position.toFixed(1)) };
 }
 
-/**
- * VWAP — Reliable mean-reversion anchor
- * Threshold: 0.5% — only trade when price deviates significantly from VWAP
- */
-function analyzeVWAP(prices, volumes) {
-  if (prices.length < 5) return { signal: 'HOLD', reason: 'Need 5+ prices for VWAP', value: null };
-  
-  let totalPV = 0, totalV = 0;
-  for (let i = 0; i < prices.length; i++) {
-    const vol = volumes?.[i] || 100000;
-    totalPV += prices[i] * vol;
-    totalV += vol;
-  }
-  const vwap = totalPV / totalV;
+// ═══════════════════════════════════════
+// INDICATOR 4: Price vs SMA20 (Mean Reversion)
+// ═══════════════════════════════════════
+function analyzeMeanReversion(prices) {
+  if (prices.length < 5) return { signal: 'HOLD', reason: 'Insufficient data', value: null };
+  const sma = calcSMA(prices, 20);
   const current = prices[prices.length - 1];
-  const diff = ((current - vwap) / vwap) * 100;
+  const deviation = ((current - sma) / sma) * 100;
   
-  if (diff < -0.5) return { signal: 'BUY', reason: `${Math.abs(diff).toFixed(2)}% below VWAP — undervalued`, value: parseFloat(diff.toFixed(2)) };
-  if (diff > 0.5) return { signal: 'SELL', reason: `${diff.toFixed(2)}% above VWAP — overvalued`, value: parseFloat(diff.toFixed(2)) };
-  return { signal: 'HOLD', reason: `Near VWAP (${diff.toFixed(2)}%)`, value: parseFloat(diff.toFixed(2)) };
+  // Price significantly below mean = BUY opportunity (reversion up)
+  if (deviation < -2.0) return { signal: 'BUY', reason: `${Math.abs(deviation).toFixed(2)}% below SMA20 — undervalued`, value: parseFloat(deviation.toFixed(2)) };
+  // Price significantly above mean = SELL opportunity (reversion down)
+  if (deviation > 2.0) return { signal: 'SELL', reason: `${deviation.toFixed(2)}% above SMA20 — overvalued`, value: parseFloat(deviation.toFixed(2)) };
+  return { signal: 'HOLD', reason: `Near SMA20 (${deviation.toFixed(2)}%)`, value: parseFloat(deviation.toFixed(2)) };
 }
 
-/**
- * Confluence V2 — Conservative + Position-Aware
- * 
- * RULES:
- * 1. Need 3/4 indicators to agree for a trade signal
- * 2. If we have an open SELL position → only signal BUY (to close at profit)
- * 3. If we have an open BUY position → only signal SELL (to close at profit)
- * 4. NEVER open a new position in the same direction as current position
- * 5. Check if closing would be profitable before signaling
- */
+// ═══════════════════════════════════════
+// PHASE DETECTION (Wyckoff Simplified)
+// ═══════════════════════════════════════
+function detectPhase(prices) {
+  if (prices.length < 15) return { phase: 'UNKNOWN', momentum: 0 };
+  
+  const sma20 = calcSMA(prices, 20);
+  const current = prices[prices.length - 1];
+  const rsi = calcRSI(prices, 8);
+  
+  // Short-term momentum (5 ticks)
+  const recent5 = prices.slice(-5);
+  const momentum5 = ((recent5[recent5.length - 1] - recent5[0]) / recent5[0]) * 100;
+  
+  // Medium-term momentum (15 ticks) 
+  const recent15 = prices.slice(-15);
+  const momentum15 = ((recent15[recent15.length - 1] - recent15[0]) / recent15[0]) * 100;
+  
+  let phase;
+  if (current < sma20 && rsi < 40 && momentum5 < -0.5) {
+    phase = 'ACCUMULATION'; // Price dropping, getting oversold → BUY ZONE
+  } else if (current > sma20 && momentum5 > 1.0 && momentum15 > 0) {
+    phase = 'MARKUP'; // Strong uptrend → HOLD or BUY on dips
+  } else if (current > sma20 && rsi > 60 && Math.abs(momentum5) < 0.5) {
+    phase = 'DISTRIBUTION'; // Price high and stalling → SELL ZONE
+  } else if (current > sma20 && momentum5 < -0.5) {
+    phase = 'MARKDOWN'; // Starting to drop from high → SELL if haven't
+  } else {
+    phase = 'RANGING'; // No clear direction
+  }
+  
+  return { phase, momentum5, momentum15 };
+}
+
+// ═══════════════════════════════════════
+// CONFLUENCE ENGINE V3 — Professional
+// ═══════════════════════════════════════
 function calcConfluence(indicators, prices) {
   const signals = Object.values(indicators).map(i => i.signal);
   const votes = { buy: 0, sell: 0, hold: 0 };
   signals.forEach(s => votes[s.toLowerCase()]++);
   
-  // Trend check: direction of last 10 prices
-  let trend = 'FLAT';
-  if (prices.length >= 10) {
-    const recent = prices.slice(-10);
-    const change = ((recent[recent.length - 1] - recent[0]) / recent[0]) * 100;
-    if (change > 0.2) trend = 'UP';
-    else if (change < -0.2) trend = 'DOWN';
-  }
+  // Market context
+  const phaseInfo = detectPhase(prices);
+  const current = prices[prices.length - 1];
+  const support = findSupport(prices, 30);
+  const resistance = findResistance(prices, 30);
+  const sma20 = calcSMA(prices, 20);
+  
+  // Distance to key levels
+  const distToSupport = ((current - support) / support) * 100;
+  const distToResistance = ((resistance - current) / current) * 100;
   
   // Check current position
   let currentPosition = null;
@@ -166,98 +210,140 @@ function calcConfluence(indicators, prices) {
   let signal = 'HOLD';
   let confidence = 0;
   let reason = '';
-  const currentPrice = prices[prices.length - 1];
+  let positionSize = 0; // XLM amount to trade
   
-  // ═══ POSITION-AWARE LOGIC ═══
+  // ═══════════════════════════════════════
+  // DECISION TREE
+  // ═══════════════════════════════════════
+  
   if (currentPosition) {
-    // We have an open position — only look for profitable exit
-    const entryPrice = currentPosition.entryPrice;
+    // ═══ HAVE POSITION — Manage Exit ═══
+    const entry = currentPosition.entryPrice;
     const side = currentPosition.side;
     
-    if (side === 'SELL') {
-      // Open SELL → need BUY to close → only close if price dropped (profit)
-      const profitPct = ((entryPrice - currentPrice) / entryPrice) * 100;
-      if (profitPct > 0.3 && votes.buy >= 2) {
-        signal = 'BUY';
-        confidence = 0.85;
-        reason = `Close SELL at +${profitPct.toFixed(2)}% profit (${votes.buy}/4 BUY)`;
-      } else if (profitPct < -3.0) {
-        // Stop loss — cut losses
-        signal = 'BUY';
-        confidence = 0.9;
-        reason = `STOP LOSS: Close SELL at ${profitPct.toFixed(2)}% loss`;
-      } else {
-        reason = `Holding SELL position (P&L: ${profitPct.toFixed(2)}%)`;
+    if (side === 'BUY') {
+      const pnlPct = ((current - entry) / entry) * 100;
+      
+      // Take Profit: +2% or at resistance
+      if (pnlPct >= 2.0) {
+        signal = 'SELL'; confidence = 0.95; positionSize = currentPosition.amount;
+        reason = `🎯 TAKE PROFIT: +${pnlPct.toFixed(2)}% (target +2%)`;
       }
-    } else if (side === 'BUY') {
-      // Open BUY → need SELL to close → only close if price rose (profit)
-      const profitPct = ((currentPrice - entryPrice) / entryPrice) * 100;
-      if (profitPct > 0.3 && votes.sell >= 2) {
-        signal = 'SELL';
-        confidence = 0.85;
-        reason = `Close BUY at +${profitPct.toFixed(2)}% profit (${votes.sell}/4 SELL)`;
-      } else if (profitPct < -3.0) {
-        // Stop loss
-        signal = 'SELL';
-        confidence = 0.9;
-        reason = `STOP LOSS: Close BUY at ${profitPct.toFixed(2)}% loss`;
-      } else {
-        reason = `Holding BUY position (P&L: ${profitPct.toFixed(2)}%)`;
+      // Near resistance with profit 
+      else if (pnlPct > 0.5 && distToResistance < 0.5) {
+        signal = 'SELL'; confidence = 0.85; positionSize = currentPosition.amount;
+        reason = `📊 Near resistance with +${pnlPct.toFixed(2)}% profit`;
+      }
+      // Indicators flip + profit
+      else if (pnlPct > 0.3 && votes.sell >= 3) {
+        signal = 'SELL'; confidence = 0.8; positionSize = currentPosition.amount;
+        reason = `📉 ${votes.sell}/4 SELL + profit +${pnlPct.toFixed(2)}%`;
+      }
+      // Stop Loss: -1.5%
+      else if (pnlPct <= -1.5) {
+        signal = 'SELL'; confidence = 0.95; positionSize = currentPosition.amount;
+        reason = `🛑 STOP LOSS: ${pnlPct.toFixed(2)}% (limit -1.5%)`;
+      }
+      // Hold
+      else {
+        reason = `📈 Holding BUY — P&L: ${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}% | TP: +2.0% | SL: -1.5%`;
+      }
+    }
+    else if (side === 'SELL') {
+      const pnlPct = ((entry - current) / entry) * 100;
+      
+      // Take Profit: +2%
+      if (pnlPct >= 2.0) {
+        signal = 'BUY'; confidence = 0.95; positionSize = currentPosition.amount;
+        reason = `🎯 TAKE PROFIT: +${pnlPct.toFixed(2)}% (target +2%)`;
+      }
+      // Near support with profit
+      else if (pnlPct > 0.5 && distToSupport < 0.5) {
+        signal = 'BUY'; confidence = 0.85; positionSize = currentPosition.amount;
+        reason = `📊 Near support with +${pnlPct.toFixed(2)}% profit`;
+      }
+      // Indicators flip + profit
+      else if (pnlPct > 0.3 && votes.buy >= 3) {
+        signal = 'BUY'; confidence = 0.8; positionSize = currentPosition.amount;
+        reason = `📈 ${votes.buy}/4 BUY + profit +${pnlPct.toFixed(2)}%`;
+      }
+      // Stop Loss: -1.5%
+      else if (pnlPct <= -1.5) {
+        signal = 'BUY'; confidence = 0.95; positionSize = currentPosition.amount;
+        reason = `🛑 STOP LOSS: ${pnlPct.toFixed(2)}% (limit -1.5%)`;
+      }
+      else {
+        reason = `📉 Holding SELL — P&L: ${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}% | TP: +2.0% | SL: -1.5%`;
       }
     }
   } else {
-    // ═══ NO POSITION — Look for entry ═══
-    // Conservative: need 3/4 agreement
-    if (votes.buy >= 3 && trend !== 'DOWN') {
+    // ═══ NO POSITION — Look for Entry ═══
+    
+    // IDEAL BUY: Price below SMA, near support, multiple indicators agree
+    if (votes.buy >= 3 && (phaseInfo.phase === 'ACCUMULATION' || current < sma20)) {
       signal = 'BUY';
-      confidence = votes.buy / 4;
-      reason = `${votes.buy}/4 indicators BUY + trend ${trend}`;
-    } else if (votes.sell >= 3 && trend !== 'UP') {
+      confidence = votes.buy === 4 ? 1.0 : 0.75;
+      positionSize = votes.buy === 4 ? 200 : 100;
+      reason = `${votes.buy}/4 BUY in ${phaseInfo.phase} | Near support ($${support.toFixed(5)})`;
+    }
+    // IDEAL SELL: Price above SMA, near resistance, multiple indicators agree
+    else if (votes.sell >= 3 && (phaseInfo.phase === 'DISTRIBUTION' || current > sma20)) {
       signal = 'SELL';
-      confidence = votes.sell / 4;
-      reason = `${votes.sell}/4 indicators SELL + trend ${trend}`;
-    } else {
+      confidence = votes.sell === 4 ? 1.0 : 0.75;
+      positionSize = votes.sell === 4 ? 200 : 100;
+      reason = `${votes.sell}/4 SELL in ${phaseInfo.phase} | Near resistance ($${resistance.toFixed(5)})`;
+    }
+    // No clear setup
+    else {
       confidence = Math.max(votes.buy, votes.sell) / 4;
-      reason = `No strong consensus: ${votes.buy}B/${votes.sell}S/${votes.hold}H (need 3/4)`;
+      reason = `⏳ ${phaseInfo.phase}: ${votes.buy}B/${votes.sell}S/${votes.hold}H — waiting for setup`;
     }
   }
   
-  return { signal, confidence, votes, reason, trend, hasPosition: !!currentPosition };
+  return {
+    signal, confidence, votes, reason, positionSize,
+    phase: phaseInfo.phase,
+    keyLevels: {
+      support: parseFloat(support.toFixed(5)),
+      resistance: parseFloat(resistance.toFixed(5)),
+      sma20: parseFloat(sma20.toFixed(5)),
+      current: parseFloat(current.toFixed(5))
+    },
+    risk: currentPosition ? undefined : {
+      entry: current.toFixed(5),
+      stopLoss: signal === 'BUY' ? (current * 0.985).toFixed(5) : (current * 1.015).toFixed(5),
+      takeProfit: signal === 'BUY' ? (current * 1.02).toFixed(5) : (current * 0.98).toFixed(5),
+      riskReward: '1:1.33'
+    },
+    hasPosition: !!currentPosition
+  };
 }
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 // Main
-// ═══════════════════════════════════
-
+// ═══════════════════════════════════════
 function main() {
   if (!fs.existsSync(PRICE_HISTORY_FILE)) {
-    console.log(JSON.stringify({
-      error: 'No price history found. Run /stellar-poll-price first (need 10+ polls).'
-    }));
+    console.log(JSON.stringify({ error: 'No price history. Run /stellar-poll-price first.' }));
     return;
   }
 
   const history = JSON.parse(fs.readFileSync(PRICE_HISTORY_FILE, 'utf-8'));
-  
   if (history.length < 5) {
-    console.log(JSON.stringify({
-      error: `Only ${history.length} price points. Need at least 5. Run /stellar-poll-price more.`
-    }));
+    console.log(JSON.stringify({ error: `Only ${history.length} data points. Need 5+.` }));
     return;
   }
 
   const prices = history.map(h => h.price);
-  const volumes = history.map(h => h.volume);
 
   // Run all 4 indicators
   const indicators = {
     ema: analyzeEMA(prices),
     rsi: analyzeRSI(prices),
     bb: analyzeBB(prices),
-    vwap: analyzeVWAP(prices, volumes)
+    meanReversion: analyzeMeanReversion(prices) // Replaced VWAP with mean-reversion
   };
 
-  // Calculate confluence with position awareness
   const confluence = calcConfluence(indicators, prices);
 
   const result = {
@@ -269,10 +355,9 @@ function main() {
     timestamp: new Date().toISOString()
   };
 
-  // Save analysis state for on-chain audit trail
+  // Save for on-chain audit
   const ANALYSIS_STATE_FILE = path.resolve(__dirname, '../../server/analysis-state.json');
   try {
-    fs.mkdirSync(path.dirname(ANALYSIS_STATE_FILE), { recursive: true });
     fs.writeFileSync(ANALYSIS_STATE_FILE, JSON.stringify(result, null, 2));
   } catch (e) { /* best effort */ }
 

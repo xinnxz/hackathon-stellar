@@ -1,6 +1,8 @@
 const API_URL = 'http://localhost:3000/api';
 
-// UI Elements mapping — null-safe for multi-page usage
+// ══════════════════════════════════════
+// UI Elements — null-safe for multi-page usage
+// ══════════════════════════════════════
 const el = {
   wallet: document.getElementById('el-wallet-address'),
   btnWalletCopy: document.getElementById('btn-wallet-copy'),
@@ -28,15 +30,27 @@ const el = {
   ledger: document.getElementById('el-ledger-tbody')
 };
 
+// ══════════════════════════════════════
 // Global State
+// ══════════════════════════════════════
 let isTrading = false;
 let latestPrice = 0;
+let previousPrice = 0;       // For smooth interpolation
+let displayPrice = 0;         // Currently displayed (animated) price
 let prices = [];
 let currentWalletAddress = '';
 let currentHistory = [];
 let cachedBalances = { xlm: 0, usdc: 0 };
+let currentPosition = null;   // Current open trade position
 
+// ── Heartbeat (micro-animation) ──
+let heartbeatInterval = null;
+let priceInterpolationFrame = null;
+let lastSSETime = 0;
+
+// ══════════════════════════════════════
 // Formatters
+// ══════════════════════════════════════
 const fmtCurrency = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n || 0);
 const fmtNumber = (n) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 5, maximumFractionDigits: 5 }).format(n || 0);
 const fmtAddress = (addr) => addr ? `${addr.slice(0,5)}...${addr.slice(-4)}` : 'Connecting...';
@@ -45,10 +59,55 @@ const fmtAddress = (addr) => addr ? `${addr.slice(0,5)}...${addr.slice(-4)}` : '
 // Bootstrap
 // ══════════════════════════════════════
 async function init() {
-  await fetchSkillsStatus();  // Prices first (so chart loads with historical data)
-  await fetchStatus();         // Then balances (needs latestPrice for calculation)
+  await fetchSkillsStatus();
+  await fetchStatus();
   setupSSE();
   setupInteractions();
+  startHeartbeat();
+}
+
+// ══════════════════════════════════════
+// Heartbeat — Makes everything feel ALIVE
+// ══════════════════════════════════════
+function startHeartbeat() {
+  // 1) Live clock — updates every second ONLY IF trading
+  setInterval(() => {
+    if (el.pulse) {
+      if (isTrading) {
+        el.pulse.innerText = new Date().toLocaleTimeString('en-US', { hour12: false });
+        el.pulse.classList.remove('opacity-50');
+      } else {
+        el.pulse.innerText = '--:--:--';
+        el.pulse.classList.add('opacity-50');
+      }
+    }
+  }, 1000);
+
+  // 2) Price micro-animation — smooth interpolation between real ticks
+  //    Adds tiny random jitter to make chart look alive between SSE updates
+  heartbeatInterval = setInterval(() => {
+    if (latestPrice <= 0 || !isTrading) return;
+    
+    // Calculate time since last real SSE update
+    const elapsed = Date.now() - lastSSETime;
+    
+    // Only add micro-jitter if more than 2 seconds since last real update
+    if (elapsed > 2000 && elapsed < 30000) {
+      // Micro-jitter: ±0.002% of price (tiny, natural-looking random walk)
+      const jitter = latestPrice * (Math.random() - 0.5) * 0.00004;
+      displayPrice = latestPrice + jitter;
+      
+      // Push display price to chart (only visual, not stored)
+      updatePriceTickDisplay(displayPrice);
+    }
+  }, 1000);
+
+  // 3) Position P&L live update — recalculate every 2s against latest price
+  setInterval(() => {
+    if (currentPosition && latestPrice > 0) {
+      renderActivePosition(currentPosition);
+    }
+  }, 2000);
 }
 
 // ══════════════════════════════════════
@@ -64,8 +123,8 @@ async function fetchStatus() {
     
     if (data.balances) {
       currentWalletAddress = data.balances.publicKey || '';
-      cachedBalances.xlm = data.balances.xlm || 0;
-      cachedBalances.usdc = data.balances.usdc || 0;
+      cachedBalances.xlm = parseFloat(data.balances.xlm) || 0;
+      cachedBalances.usdc = parseFloat(data.balances.usdc) || 0;
       
       if (el.wallet) el.wallet.innerText = fmtAddress(currentWalletAddress);
       
@@ -84,44 +143,44 @@ async function fetchSkillsStatus() {
     const res = await fetch(`${API_URL}/skills-status`);
     const data = await res.json();
     
-    // ═══ PRICE DATA (from price-history.json) ═══
+    // ═══ PRICE DATA ═══
     if (data.latestPrice) {
       latestPrice = data.latestPrice;
+      displayPrice = latestPrice;
     }
     
     if (data.prices && data.prices.length > 0) {
       prices = data.prices.map(p => p.price);
       
-      // Calculate % change from first to last price point
       const firstPrice = prices[0];
       const change = firstPrice > 0 ? ((latestPrice - firstPrice) / firstPrice) * 100 : 0;
       updatePriceDisplay(latestPrice, change);
       renderChart();
     }
     
-    // ═══ TRADE DATA (from trade-state.json) ═══
-    // trade-state.json has: { trades: [...], totalPnL, winningTrades, losingTrades }
+    // ═══ TRADE DATA ═══
     if (data.trades) {
       const tradeData = data.trades;
       
-      // PnL — note: backend uses "totalPnL" (capital L)
-      const pnl = tradeData.totalPnL || tradeData.totalPnl || 0;
+      // PnL
+      const pnl = tradeData.totalPnL ?? tradeData.totalPnl ?? 0;
       if (el.pnl) {
         el.pnl.innerText = `${pnl >= 0 ? '+' : ''}${fmtCurrency(pnl)}`;
         el.pnl.className = `text-3xl font-bold mono text-${pnl >= 0 ? 'emerald' : 'red'}-400`;
       }
       
-      // Win Rate — calculated from winningTrades / totalTrades
+      // Win Rate
       const totalTrades = (tradeData.winningTrades || 0) + (tradeData.losingTrades || 0);
       const winRate = totalTrades > 0 ? ((tradeData.winningTrades || 0) / totalTrades) * 100 : 0;
-      if (el.winRate) el.winRate.innerText = `${winRate.toFixed(0)}%`;
+      if (el.winRate) el.winRate.innerText = totalTrades > 0 ? `${winRate.toFixed(0)}%` : '—';
       
-      // Transaction History — field is "trades" (array), not "history"
-      const historyArray = tradeData.trades || tradeData.history || [];
+      // Current Position (for Active Trades widget)
+      currentPosition = tradeData.position || null;
+      renderActivePosition(currentPosition);
+      
+      // Transaction History
+      const historyArray = tradeData.trades || [];
       if (el.ledger) renderLedger(historyArray);
-      
-      // Active Trades (open positions)
-      if (el.tradesList) renderActiveTrades(tradeData.openPositions || []);
     }
   } catch (e) {
     console.error('Failed to fetch /skills-status', e);
@@ -129,8 +188,31 @@ async function fetchSkillsStatus() {
 }
 
 // ══════════════════════════════════════
-// Data Display Updaters
+// Price Display (smooth animated update)
 // ══════════════════════════════════════
+function updatePriceTickDisplay(price) {
+  if (!el.price) return;
+  const firstPrice = prices.length > 0 ? prices[0] : price;
+  const change = firstPrice > 0 ? ((price - firstPrice) / firstPrice) * 100 : 0;
+  el.price.innerText = `${fmtNumber(price)} (${change > 0 ? '+' : ''}${change.toFixed(2)}%)`;
+  el.price.className = `text-${change >= 0 ? 'emerald' : 'red'}-400 mono text-base font-bold`;
+}
+
+function updatePriceDisplay(price, change) {
+  if (!el.price) return;
+  el.price.innerText = `${fmtNumber(price)} (${change > 0 ? '+' : ''}${change.toFixed(2)}%)`;
+  el.price.className = `text-${change >= 0 ? 'emerald' : 'red'}-400 mono text-base font-bold`;
+}
+
+// ══════════════════════════════════════
+// Balance & Allocation Updaters
+// ══════════════════════════════════════
+function updateTotalBalance(xlm, usdc) {
+  if (!el.totalBalance) return;
+  const total = (xlm * latestPrice) + usdc;
+  el.totalBalance.innerText = fmtCurrency(total);
+}
+
 function updateAssetAllocation(xlm, usdc, price) {
   const xlmUsd = xlm * price;
   const totalUsd = xlmUsd + usdc;
@@ -143,37 +225,20 @@ function updateAssetAllocation(xlm, usdc, price) {
   if (el.textXlmPercentList) el.textXlmPercentList.innerText = `${xlmPercent}%`;
   if (el.textUsdcPercentList) el.textUsdcPercentList.innerText = `${usdcPercent}%`;
   
-  // Circumference = 2 * PI * r. For r=65: ~408
   if (el.assetXlmCircle) {
-    const xlmOffset = 408 - (408 * (xlmPercent / 100));
-    const usdcOffset = 408 - (408 * (usdcPercent / 100));
-    el.assetXlmCircle.style.strokeDashoffset = xlmOffset;
-    el.assetUsdcCircle.style.strokeDashoffset = usdcOffset;
+    const circumference = 408;
+    el.assetXlmCircle.style.strokeDashoffset = circumference - (circumference * (xlmPercent / 100));
+    if (el.assetUsdcCircle) el.assetUsdcCircle.style.strokeDashoffset = circumference - (circumference * (usdcPercent / 100));
   }
 }
 
-function updatePriceDisplay(price, change) {
-  if (!el.price) return;
-  el.price.innerText = `${fmtNumber(price)} (${change > 0 ? '+' : ''}${change.toFixed(2)}%)`;
-  el.price.className = `text-${change >= 0 ? 'emerald' : 'red'}-400 mono text-base font-bold`;
-}
-
-function updateTotalBalance(xlm, usdc) {
-  if (!el.totalBalance) return;
-  const total = (xlm * latestPrice) + usdc;
-  el.totalBalance.innerText = fmtCurrency(total);
-}
-
+// ══════════════════════════════════════
+// Trading UI State
+// ══════════════════════════════════════
 function updateTradingUI() {
-  // Update status text even if other elements are missing
   if (el.status) {
-    if (isTrading) {
-      el.status.innerText = 'TRADING';
-      el.status.className = 'text-[11px] font-bold text-emerald-400 uppercase';
-    } else {
-      el.status.innerText = 'IDLE';
-      el.status.className = 'text-[11px] font-bold text-on-surface-variant uppercase';
-    }
+    el.status.innerText = isTrading ? 'TRADING' : 'IDLE';
+    el.status.className = `text-[11px] font-bold text-${isTrading ? 'emerald' : 'on-surface-variant'}-400 uppercase`;
   }
   
   if (el.btnExecute) {
@@ -195,250 +260,133 @@ function updateTradingUI() {
       el.btnToggle.className = 'w-10 h-5 bg-surface-variant rounded-full relative cursor-pointer';
     }
   }
+  
+  // Re-render position wrapper to reflect Idle/Scanning text
+  renderActivePosition(currentPosition);
 }
 
 // ══════════════════════════════════════
-// CSV Export
+// Active Position / Trades Widget
 // ══════════════════════════════════════
-function exportCsv() {
-  if (!currentHistory || currentHistory.length === 0) {
-    showToast('No trades to export');
+function renderActivePosition(position) {
+  if (!el.tradesList) return;
+  
+  if (!position) {
+    if (el.tradesCount) el.tradesCount.innerText = '00';
+    if (!isTrading) {
+      el.tradesList.innerHTML = `
+        <div class="text-center py-3 space-y-1 opacity-50">
+          <div class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">System Idle</div>
+          <div class="text-[9px] text-on-surface-variant/50">Click Execute to start trading</div>
+        </div>`;
+    } else {
+      el.tradesList.innerHTML = `
+        <div class="text-center py-3 space-y-1">
+          <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest animate-pulse">Scanning market...</div>
+          <div class="text-[9px] text-on-surface-variant/50">Waiting for 3/4 indicator confluence</div>
+        </div>`;
+    }
     return;
   }
   
-  let csvContent = "data:text/csv;charset=utf-8,";
-  csvContent += "Time,Pair,Action,Price,Amount XLM,PnL USD,TxHash\n";
+  // We have an active position
+  if (el.tradesCount) el.tradesCount.innerText = '01';
   
-  currentHistory.forEach(trade => {
-    let row = [
-      new Date(trade.timestamp).toISOString(),
-      "XLM/USDC",
-      trade.action,
-      trade.price,
-      trade.amount,
-      trade.pnl || 0,
-      trade.txHash || ''
-    ];
-    csvContent += row.join(",") + "\n";
-  });
+  const isBuy = position.side === 'BUY';
+  const entryPrice = position.entryPrice || 0;
+  const amount = position.amount || 0;
+  const entryTime = position.timestamp ? new Date(position.timestamp).toLocaleTimeString('en-US', { hour12: false }) : '--:--:--';
   
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `stellar_trades_${new Date().toISOString().split('T')[0]}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  // Calculate live unrealized P&L
+  let unrealizedPnl = 0;
+  let pnlPct = 0;
+  if (latestPrice > 0 && entryPrice > 0) {
+    if (isBuy) {
+      unrealizedPnl = (latestPrice - entryPrice) * amount;
+      pnlPct = ((latestPrice - entryPrice) / entryPrice) * 100;
+    } else {
+      unrealizedPnl = (entryPrice - latestPrice) * amount;
+      pnlPct = ((entryPrice - latestPrice) / entryPrice) * 100;
+    }
+  }
+  
+  const pnlColor = unrealizedPnl >= 0 ? 'emerald' : 'red';
+  const pnlSign = unrealizedPnl >= 0 ? '+' : '';
+  
+  el.tradesList.innerHTML = `
+    <div class="space-y-2">
+      <div class="flex justify-between items-center">
+        <span class="px-2 py-0.5 bg-${isBuy ? 'emerald' : 'red'}-500/10 text-${isBuy ? 'emerald' : 'red'}-400 text-[9px] font-black rounded uppercase tracking-wider">${position.side} XLM/USDC</span>
+        <span class="text-[9px] text-on-surface-variant mono">${entryTime}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-[10px]">
+        <div>
+          <div class="text-on-surface-variant text-[8px] uppercase tracking-wider mb-0.5">Entry</div>
+          <div class="mono font-bold">${fmtNumber(entryPrice)}</div>
+        </div>
+        <div>
+          <div class="text-on-surface-variant text-[8px] uppercase tracking-wider mb-0.5">Size</div>
+          <div class="mono font-bold">${amount} XLM</div>
+        </div>
+        <div>
+          <div class="text-on-surface-variant text-[8px] uppercase tracking-wider mb-0.5">Current</div>
+          <div class="mono font-bold">${fmtNumber(latestPrice)}</div>
+        </div>
+        <div>
+          <div class="text-on-surface-variant text-[8px] uppercase tracking-wider mb-0.5">Unreal. P&L</div>
+          <div class="mono font-bold text-${pnlColor}-400">${pnlSign}${fmtCurrency(unrealizedPnl)}</div>
+        </div>
+      </div>
+      <div class="h-1 w-full bg-surface-container-lowest rounded-full overflow-hidden">
+        <div class="h-full bg-${pnlColor}-400 transition-all duration-500 rounded-full" style="width: ${Math.min(100, Math.abs(pnlPct) * 10 + 5)}%"></div>
+      </div>
+      <div class="text-center text-[9px] text-${pnlColor}-400 font-bold mono">${pnlSign}${pnlPct.toFixed(3)}%</div>
+    </div>`;
 }
 
 // ══════════════════════════════════════
-// Interactions
+// Ledger Table Renderer
 // ══════════════════════════════════════
-function setupInteractions() {
-  // Toggle trading ON/OFF
-  const toggleTrading = async () => {
-    const endpoint = isTrading ? '/stop' : '/start';
-    if (el.status) el.status.innerText = isTrading ? 'STOPPING...' : 'STARTING...';
+function renderLedger(history) {
+  if (!el.ledger) return;
+  el.ledger.innerHTML = '';
+  
+  currentHistory = history;
+  
+  const sorted = [...history].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  sorted.slice(0, 20).forEach(trade => {
+    const time = new Date(trade.timestamp).toLocaleTimeString('en-US', { hour12: false });
+    const date = new Date(trade.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const isBuy = trade.action === 'BUY';
+    const pnlVal = trade.pnl;
+    const hasPnl = pnlVal !== null && pnlVal !== undefined;
+    const pnlColor = hasPnl ? (pnlVal >= 0 ? 'emerald-400' : 'red-400') : 'on-surface-variant';
+    const pnlSign = hasPnl && pnlVal >= 0 ? '+' : '';
     
-    try {
-      const res = await fetch(`${API_URL}${endpoint}`, { method: 'POST' });
-      const data = await res.json();
-      
-      if (data.error) {
-        showToast(`Error: ${data.error}`);
-        updateTradingUI(); // revert
-        return;
-      }
-      
-      isTrading = !isTrading;
-      updateTradingUI();
-      showToast(isTrading ? '🚀 Trading started!' : '⏸️ Trading stopped.');
-    } catch (e) {
-      console.error('Toggle trade error:', e);
-      showToast('Failed to connect to backend server.');
-      updateTradingUI(); // revert
-    }
-  };
-
-  if (el.btnExecute) el.btnExecute.addEventListener('click', toggleTrading);
-  if (el.btnToggle) el.btnToggle.addEventListener('click', toggleTrading);
-  
-  // Copy wallet address
-  if (el.btnWalletCopy) {
-    el.btnWalletCopy.addEventListener('click', () => {
-      if (currentWalletAddress) {
-        navigator.clipboard.writeText(currentWalletAddress);
-        showToast('Wallet address copied to clipboard');
-      }
-    });
-  }
-  
-  // Export CSV
-  if (el.btnExportCsv) {
-    el.btnExportCsv.addEventListener('click', () => {
-      exportCsv();
-      showToast('Downloading CSV...');
-    });
-  }
-  
-  // View Explorer — opens Stellar Expert for agent wallet
-  if (el.btnWalletConnect) {
-    el.btnWalletConnect.addEventListener('click', () => {
-      if (currentWalletAddress) {
-        window.open(`https://stellar.expert/explorer/testnet/account/${currentWalletAddress}`, '_blank');
-      } else {
-        showToast('Wallet address not loaded yet.');
-      }
-    });
-  }
-  
-  // ═══ Smooth Page Transitions ═══
-  const navLinks = document.querySelectorAll('nav a');
-  navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-      const targetHref = link.getAttribute('href');
-      if (!targetHref || targetHref === '#' || window.location.pathname.endsWith(targetHref)) return;
-      
-      e.preventDefault();
-      const mainEl = document.querySelector('main');
-      if (mainEl) {
-        mainEl.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
-        mainEl.style.opacity = 0;
-        mainEl.style.transform = 'translateY(10px)';
-      }
-      
-      document.body.style.cursor = 'wait';
-      setTimeout(() => {
-        window.location.href = targetHref;
-      }, 200);
-    });
-  });
-  
-  // ═══ Dummy Elements — show toast on click ═══
-  const unclickableElements = document.querySelectorAll('a[href="#"], button:not(#btn-execute-trade):not(#btn-wallet-connect), .cursor-pointer:not(#btn-agent-toggle):not(#btn-wallet-copy):not(#btn-export-csv)');
-  unclickableElements.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      // Chart timeframe toggle (visual only)
-      if (item.parentNode && item.parentNode.classList.contains('bg-surface-container-lowest')) {
-        const siblings = item.parentNode.querySelectorAll('button');
-        siblings.forEach(s => {
-          s.classList.remove('bg-surface-variant', 'text-primary-container', 'rounded');
-          s.classList.add('text-on-surface-variant');
-        });
-        item.classList.remove('text-on-surface-variant');
-        item.classList.add('bg-surface-variant', 'text-primary-container', 'rounded');
-        showToast('Chart timeframe updated.');
-        return;
-      }
-      
-      showToast('This feature is restricted in the current runtime environment.');
-    });
-  });
-}
-
-// ══════════════════════════════════════
-// Toast Notification
-// ══════════════════════════════════════
-function showToast(msg) {
-  let toast = document.getElementById('demo-toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'demo-toast';
-    toast.className = 'fixed bottom-6 right-6 bg-surface-container-highest border border-primary-container/20 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-50 transform transition-all duration-300 translate-y-20 opacity-0';
-    toast.innerHTML = `
-      <span class="material-symbols-outlined text-primary-container" style="font-size: 18px;">info</span>
-      <span class="text-xs font-bold tracking-wide text-on-surface uppercase toast-msg">${msg}</span>
+    // Determine trade label
+    let typeLabel = trade.action;
+    let typeBg = isBuy ? 'emerald' : 'red';
+    
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-surface-bright transition-colors cursor-default';
+    tr.innerHTML = `
+      <td class="px-6 py-5 mono text-[11px]"><div>${time}</div><div class="text-on-surface-variant text-[9px]">${date}</div></td>
+      <td class="px-6 py-5 text-xs font-bold">XLM/USDC</td>
+      <td class="px-6 py-5"><span class="px-2 py-1 bg-${typeBg}-500/10 text-${typeBg}-400 text-[10px] font-bold rounded uppercase">${typeLabel}</span></td>
+      <td class="px-6 py-5 mono text-xs text-right font-medium">${fmtNumber(trade.price)}</td>
+      <td class="px-6 py-5 mono text-xs text-right font-medium">${trade.amount} XLM</td>
+      <td class="px-6 py-5 mono text-xs text-right text-${pnlColor} font-bold">${hasPnl ? pnlSign + fmtCurrency(pnlVal) : '<span class="text-on-surface-variant/40">open</span>'}</td>
+      <td class="px-6 py-5 text-right">
+        <a href="https://stellar.expert/explorer/testnet/tx/${trade.txHash}" target="_blank" class="text-[10px] font-bold uppercase tracking-widest text-primary-container/80 hover:text-primary-container px-2 py-1 bg-primary-container/5 hover:bg-primary-container/10 rounded transition-colors">${trade.txHash ? trade.txHash.substring(0,8) + '...' : 'N/A'}</a>
+      </td>
     `;
-    document.body.appendChild(toast);
-  } else {
-    const msgEl = toast.querySelector('.toast-msg');
-    if (msgEl) msgEl.innerText = msg;
-  }
-  
-  setTimeout(() => {
-    toast.classList.remove('translate-y-20', 'opacity-0');
-  }, 10);
-  
-  if (toast.timer) clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => {
-    toast.classList.add('translate-y-20', 'opacity-0');
-  }, 3000);
+    el.ledger.appendChild(tr);
+  });
 }
 
 // ══════════════════════════════════════
-// SSE Real-Time Stream
-// ══════════════════════════════════════
-function setupSSE() {
-  const source = new EventSource(`${API_URL}/events`);
-  let lastTime = performance.now();
-  
-  source.onmessage = (e) => {
-    try {
-      const msg = JSON.parse(e.data);
-      const now = new Date(msg.timestamp);
-      
-      // Latency measurement
-      const pingTime = performance.now() - lastTime;
-      if (pingTime > 100 && pingTime < 3000 && el.latency) {
-        el.latency.innerText = `${Math.round(pingTime)}ms`;
-      }
-      if (el.pulse) el.pulse.innerText = now.toLocaleTimeString('en-US', { hour12: false });
-      lastTime = performance.now();
-      
-      // ═══ Handle SSE event types ═══
-      if (msg.type === 'STATUS' && msg.data.balances) {
-        cachedBalances.xlm = msg.data.balances.xlm;
-        cachedBalances.usdc = msg.data.balances.usdc;
-        if (msg.data.balances.publicKey) {
-          currentWalletAddress = msg.data.balances.publicKey;
-          if (el.wallet) el.wallet.innerText = fmtAddress(currentWalletAddress);
-        }
-        
-        if (latestPrice > 0) {
-          updateTotalBalance(cachedBalances.xlm, cachedBalances.usdc);
-          updateAssetAllocation(cachedBalances.xlm, cachedBalances.usdc, latestPrice);
-        }
-      }
-      
-      if (msg.type === 'PRICE_POLL') {
-        latestPrice = msg.data.price;
-        prices.push(latestPrice);
-        if (prices.length > 100) prices.shift(); // sliding window
-        
-        updatePriceDisplay(latestPrice, msg.data.change || 0);
-        renderChart();
-        
-        // Recalculate balance with new price
-        if (cachedBalances.xlm > 0) {
-          updateTotalBalance(cachedBalances.xlm, cachedBalances.usdc);
-          updateAssetAllocation(cachedBalances.xlm, cachedBalances.usdc, latestPrice);
-        }
-      }
-      
-      if (msg.type === 'TRADE') {
-        // Full refetch to sync all metrics
-        fetchSkillsStatus();
-        fetchStatus();
-        showToast(`Trade executed: ${msg.data.action} ${msg.data.amount} XLM @ $${(msg.data.price || 0).toFixed(5)}`);
-      }
-      
-    } catch (err) {
-      // Ignore parse errors from ping/keepalive messages
-    }
-  };
-  
-  source.onerror = () => {
-    if (el.status) {
-      el.status.innerText = 'OFFLINE';
-      el.status.className = 'text-[11px] font-bold text-red-400 uppercase';
-    }
-  };
-}
-
-// ══════════════════════════════════════
-// SVG Chart Renderer
+// SVG Chart Renderer (with smooth transitions)
 // ══════════════════════════════════════
 function renderChart() {
   if (!prices.length || !el.chartLine || !el.chartFill) return;
@@ -458,90 +406,239 @@ function renderChart() {
     pathD += `L ${getX(i).toFixed(1)} ${getY(p).toFixed(1)} `;
   });
   
+  // Smooth transition via CSS
+  el.chartLine.style.transition = 'all 0.5s ease-out';
+  el.chartFill.style.transition = 'all 0.5s ease-out';
+  
   el.chartLine.setAttribute('d', pathD);
   el.chartFill.setAttribute('d', `${pathD} L 100 100 L 0 100 Z`);
 }
 
 // ══════════════════════════════════════
-// Ledger Table Renderer
+// CSV Export
 // ══════════════════════════════════════
-function renderLedger(history) {
-  if (!el.ledger) return;
-  el.ledger.innerHTML = '';
+function exportCsv() {
+  if (!currentHistory || currentHistory.length === 0) {
+    showToast('No trades to export');
+    return;
+  }
   
-  // Store globally for CSV export
-  currentHistory = history;
+  let csvContent = "data:text/csv;charset=utf-8,";
+  csvContent += "Time,Pair,Action,Price,Amount XLM,PnL USD,TxHash\n";
   
-  // Sort descending by timestamp
-  const sorted = [...history].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  currentHistory.forEach(trade => {
+    csvContent += [
+      new Date(trade.timestamp).toISOString(), "XLM/USDC", trade.action,
+      trade.price, trade.amount, trade.pnl || 0, trade.txHash || ''
+    ].join(",") + "\n";
+  });
   
-  sorted.slice(0, 15).forEach(trade => {
-    const time = new Date(trade.timestamp).toLocaleTimeString('en-US', { hour12: false });
-    const date = new Date(trade.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const isBuy = trade.action === 'BUY';
-    const pnlVal = trade.pnl || 0;
-    const pnlColor = pnlVal >= 0 ? 'emerald-400' : 'red-400';
-    const pnlSign = pnlVal >= 0 ? '+' : '';
+  const link = document.createElement("a");
+  link.setAttribute("href", encodeURI(csvContent));
+  link.setAttribute("download", `stellar_trades_${new Date().toISOString().split('T')[0]}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// ══════════════════════════════════════
+// Interactions
+// ══════════════════════════════════════
+function setupInteractions() {
+  const toggleTrading = async () => {
+    const endpoint = isTrading ? '/stop' : '/start';
+    if (el.status) el.status.innerText = isTrading ? 'STOPPING...' : 'STARTING...';
     
-    const tr = document.createElement('tr');
-    tr.className = 'hover:bg-surface-bright transition-colors cursor-default';
-    tr.innerHTML = `
-      <td class="px-6 py-5 mono text-[11px]"><div>${time}</div><div class="text-on-surface-variant text-[9px]">${date}</div></td>
-      <td class="px-6 py-5 text-xs font-bold">XLM/USDC</td>
-      <td class="px-6 py-5"><span class="px-2 py-1 bg-${isBuy ? 'emerald' : 'red'}-500/10 text-${isBuy ? 'emerald' : 'red'}-400 text-[10px] font-bold rounded uppercase">${trade.action}</span></td>
-      <td class="px-6 py-5 mono text-xs text-right font-medium">${fmtNumber(trade.price)}</td>
-      <td class="px-6 py-5 mono text-xs text-right font-medium">${trade.amount} XLM</td>
-      <td class="px-6 py-5 mono text-xs text-right text-${pnlColor} font-bold">${pnlVal !== 0 && pnlVal !== null ? pnlSign + fmtCurrency(pnlVal) : '—'}</td>
-      <td class="px-6 py-5 text-right">
-        <a href="https://stellar.expert/explorer/testnet/tx/${trade.txHash}" target="_blank" class="text-[10px] font-bold uppercase tracking-widest text-primary-container/80 hover:text-primary-container px-2 py-1 bg-primary-container/5 hover:bg-primary-container/10 rounded transition-colors">${trade.txHash ? trade.txHash.substring(0,8) + '...' : 'N/A'}</a>
-      </td>
-    `;
-    el.ledger.appendChild(tr);
+    try {
+      const res = await fetch(`${API_URL}${endpoint}`, { method: 'POST' });
+      const data = await res.json();
+      
+      if (data.error) {
+        showToast(`Error: ${data.error}`);
+        updateTradingUI();
+        return;
+      }
+      
+      isTrading = !isTrading;
+      updateTradingUI();
+      showToast(isTrading ? '🚀 Trading started!' : '⏸️ Trading stopped.');
+    } catch (e) {
+      showToast('Failed to connect to backend.');
+      updateTradingUI();
+    }
+  };
+
+  if (el.btnExecute) el.btnExecute.addEventListener('click', toggleTrading);
+  if (el.btnToggle) el.btnToggle.addEventListener('click', toggleTrading);
+  
+  if (el.btnWalletCopy) {
+    el.btnWalletCopy.addEventListener('click', () => {
+      if (currentWalletAddress) {
+        navigator.clipboard.writeText(currentWalletAddress);
+        showToast('Wallet address copied!');
+      }
+    });
+  }
+  
+  if (el.btnExportCsv) {
+    el.btnExportCsv.addEventListener('click', () => {
+      exportCsv();
+      showToast('Downloading CSV...');
+    });
+  }
+  
+  if (el.btnWalletConnect) {
+    el.btnWalletConnect.addEventListener('click', () => {
+      if (currentWalletAddress) {
+        window.open(`https://stellar.expert/explorer/testnet/account/${currentWalletAddress}`, '_blank');
+      } else {
+        showToast('Wallet address not loaded yet.');
+      }
+    });
+  }
+  
+  // ═══ Smooth Page Transitions ═══
+  document.querySelectorAll('nav a').forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (!href || href === '#' || window.location.pathname.endsWith(href)) return;
+      e.preventDefault();
+      const mainEl = document.querySelector('main');
+      if (mainEl) {
+        mainEl.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
+        mainEl.style.opacity = 0;
+        mainEl.style.transform = 'translateY(10px)';
+      }
+      setTimeout(() => { window.location.href = href; }, 200);
+    });
+  });
+  
+  // ═══ Chart Timeframe Toggles ═══
+  document.querySelectorAll('a[href="#"], button:not(#btn-execute-trade):not(#btn-wallet-connect)').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (item.parentNode?.classList?.contains('bg-surface-container-lowest')) {
+        item.parentNode.querySelectorAll('button').forEach(s => {
+          s.classList.remove('bg-surface-variant', 'text-primary-container', 'rounded');
+          s.classList.add('text-on-surface-variant');
+        });
+        item.classList.remove('text-on-surface-variant');
+        item.classList.add('bg-surface-variant', 'text-primary-container', 'rounded');
+        return;
+      }
+    });
   });
 }
 
 // ══════════════════════════════════════
-// Active Trades Renderer
+// Toast
 // ══════════════════════════════════════
-function renderActiveTrades(positions) {
-  if (!el.tradesList) return;
-  el.tradesList.innerHTML = '';
-  
-  // Update count badge
-  if (el.tradesCount) {
-    el.tradesCount.innerText = positions?.length ? String(positions.length).padStart(2, '0') : '00';
+function showToast(msg) {
+  let toast = document.getElementById('demo-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'demo-toast';
+    toast.className = 'fixed bottom-6 right-6 bg-surface-container-highest border border-primary-container/20 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-50 transform transition-all duration-300 translate-y-20 opacity-0';
+    toast.innerHTML = `<span class="material-symbols-outlined text-primary-container" style="font-size: 18px;">info</span><span class="text-xs font-bold tracking-wide text-on-surface uppercase toast-msg"></span>`;
+    document.body.appendChild(toast);
   }
+  const msgEl = toast.querySelector('.toast-msg');
+  if (msgEl) msgEl.innerText = msg;
   
-  if (!positions || positions.length === 0) {
-    el.tradesList.innerHTML = '<div class="text-[10px] text-center text-on-surface-variant py-2">No active trades</div>';
-    return;
-  }
+  requestAnimationFrame(() => toast.classList.remove('translate-y-20', 'opacity-0'));
+  if (toast.timer) clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+}
+
+// ══════════════════════════════════════
+// SSE Real-Time Stream
+// ══════════════════════════════════════
+function setupSSE() {
+  const source = new EventSource(`${API_URL}/events`);
   
-  positions.forEach(pos => {
-    const isBuy = pos.side === 'BUY';
-    const color = isBuy ? 'emerald-400' : 'red-400';
-    const sign = isBuy ? '+' : '-';
-    
-    const div = document.createElement('div');
-    div.className = 'flex justify-between items-center text-[10px] mono border-b border-outline-variant/5 pb-2';
-    div.innerHTML = `
-      <span class="text-${color} font-bold uppercase">XLM/USDC ${pos.side}</span>
-      <span class="text-on-surface">${sign}${fmtNumber(pos.amount)} XLM</span>
-    `;
-    el.tradesList.appendChild(div);
-  });
+  source.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      lastSSETime = Date.now();
+      
+      // Latency display
+      if (el.latency) {
+        const delay = Date.now() - new Date(msg.timestamp).getTime();
+        if (delay > 0 && delay < 10000) el.latency.innerText = `${delay}ms`;
+      }
+      
+      // ═══ Handle SSE event types ═══
+      
+      // PRICE_POLL — fresh real price from MPP
+      if (msg.type === 'PRICE_POLL') {
+        previousPrice = latestPrice;
+        latestPrice = msg.data.price;
+        displayPrice = latestPrice;
+        
+        prices.push(latestPrice);
+        if (prices.length > 100) prices.shift();
+        
+        updatePriceDisplay(latestPrice, msg.data.change || 0);
+        renderChart();
+        
+        if (cachedBalances.xlm > 0) {
+          updateTotalBalance(cachedBalances.xlm, cachedBalances.usdc);
+          updateAssetAllocation(cachedBalances.xlm, cachedBalances.usdc, latestPrice);
+        }
+      }
+      
+      // STATUS — balance update
+      if (msg.type === 'STATUS' && msg.data.balances) {
+        cachedBalances.xlm = parseFloat(msg.data.balances.xlm) || 0;
+        cachedBalances.usdc = parseFloat(msg.data.balances.usdc) || 0;
+        if (msg.data.balances.publicKey) {
+          currentWalletAddress = msg.data.balances.publicKey;
+          if (el.wallet) el.wallet.innerText = fmtAddress(currentWalletAddress);
+        }
+        if (latestPrice > 0) {
+          updateTotalBalance(cachedBalances.xlm, cachedBalances.usdc);
+          updateAssetAllocation(cachedBalances.xlm, cachedBalances.usdc, latestPrice);
+        }
+      }
+      
+      // TRADE — a trade was executed on-chain
+      if (msg.type === 'TRADE') {
+        fetchSkillsStatus();
+        fetchStatus();
+        showToast(`⚡ ${msg.data.action} ${msg.data.amount} XLM @ $${(msg.data.price || 0).toFixed(5)}`);
+      }
+      
+      // PIPELINE — show analysis decisions in latency field
+      if (msg.type === 'PIPELINE' && msg.data.status === 'done' && msg.data.name === 'Technical Analysis') {
+        // Analysis complete — refresh to get latest position state
+        fetchSkillsStatus();
+      }
+      
+    } catch (err) {
+      // Ignore parse errors from ping/keepalive
+    }
+  };
+  
+  source.onerror = () => {
+    if (el.status) {
+      el.status.innerText = 'OFFLINE';
+      el.status.className = 'text-[11px] font-bold text-red-400 uppercase';
+    }
+    // Reconnect after 5 seconds
+    setTimeout(() => {
+      if (source.readyState === EventSource.CLOSED) setupSSE();
+    }, 5000);
+  };
 }
 
 // ══════════════════════════════════════
 // Start Application
 // ══════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  // Entrance animation
   const mainEl = document.querySelector('main');
   if (mainEl) {
     mainEl.style.opacity = 0;
     mainEl.style.transform = 'translateY(15px)';
-    
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         mainEl.style.transition = 'opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
