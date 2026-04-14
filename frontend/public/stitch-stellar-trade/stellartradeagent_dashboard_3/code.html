@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>StellarTradeAgent | Modular Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #07151d;
+            color: #d6e4f0;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            vertical-align: middle;
+            font-size: 18px;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #07151d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2c34;
+            border-radius: 2px;
+        }
+        .widget-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-auto-rows: minmax(100px, auto);
+            gap: 0.5rem;
+        }
+        .widget-handle {
+            cursor: grab;
+        }
+        .widget-card {
+            background-color: #0A1018;
+            border: 1px solid rgba(156, 143, 120, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#07151d",
+                      "surface-container-low": "#101d26",
+                      "surface-container": "#14212a",
+                      "primary-container": "#fcc010",
+                      "on-primary": "#3f2e00",
+                      "outline-variant": "#4f4632",
+                      "on-surface-variant": "#d3c5ac",
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              }
+            },
+          }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden">
+<header class="flex justify-between items-center w-full px-4 h-12 bg-[#07151d] border-b border-outline-variant/20 fixed top-0 z-50">
+<div class="flex items-center gap-6">
+<span class="text-lg font-bold tracking-tight text-[#fcc010]">StellarTradeAgent</span>
+<div class="flex items-center gap-4 bg-surface-container-low px-2 py-1 rounded border border-outline-variant/10">
+<span class="text-[10px] uppercase font-bold tracking-widest text-emerald-500">System Live</span>
+<span class="text-[10px] mono text-on-surface-variant">CPU: 12%</span>
+<span class="text-[10px] mono text-on-surface-variant">MEM: 1.4GB</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center bg-surface-container-low px-2 py-1 rounded border border-outline-variant/20 gap-2">
+<span class="material-symbols-outlined text-primary-container text-[16px]">account_balance_wallet</span>
+<span class="mono text-[10px] font-medium">0x71C...4e92</span>
+</div>
+<button class="bg-[#fcc010] text-[#3f2e00] px-3 py-1 rounded font-bold text-[10px] uppercase tracking-wider hover:brightness-110">
+            Connected
+        </button>
+<button class="text-on-surface-variant hover:text-primary-container">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<aside class="flex flex-col fixed left-0 top-12 bottom-0 w-12 z-40 bg-[#101d26] border-r border-outline-variant/10">
+<nav class="flex flex-col items-center py-4 gap-4">
+<button class="p-2 text-primary-container bg-surface-container-high rounded"><span class="material-symbols-outlined">dashboard</span></button>
+<button class="p-2 text-on-surface-variant hover:text-white"><span class="material-symbols-outlined">show_chart</span></button>
+<button class="p-2 text-on-surface-variant hover:text-white"><span class="material-symbols-outlined">psychology</span></button>
+<button class="p-2 text-on-surface-variant hover:text-white"><span class="material-symbols-outlined">shield</span></button>
+<button class="p-2 text-on-surface-variant hover:text-white"><span class="material-symbols-outlined">list_alt</span></button>
+</nav>
+<div class="mt-auto pb-4 flex flex-col items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-white"><span class="material-symbols-outlined">help</span></button>
+<div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+</div>
+</aside>
+<main class="ml-12 mt-12 p-2 h-[calc(100vh-48px)] overflow-y-auto bg-surface">
+<div class="widget-grid">
+<div class="col-span-12 grid grid-cols-4 gap-2 mb-1">
+<div class="bg-surface-container-low p-2 border border-outline-variant/10 rounded flex flex-col justify-center">
+<span class="text-[9px] font-bold text-on-surface-variant uppercase tracking-tighter">Equity</span>
+<span class="text-lg font-bold mono text-primary-container">$142,503.22</span>
+</div>
+<div class="bg-surface-container-low p-2 border border-outline-variant/10 rounded flex flex-col justify-center">
+<span class="text-[9px] font-bold text-on-surface-variant uppercase tracking-tighter">Session PnL</span>
+<span class="text-lg font-bold mono text-emerald-400">+$4,210.50</span>
+</div>
+<div class="bg-surface-container-low p-2 border border-outline-variant/10 rounded flex flex-col justify-center">
+<span class="text-[9px] font-bold text-on-surface-variant uppercase tracking-tighter">Win Ratio</span>
+<span class="text-lg font-bold mono">68.2%</span>
+</div>
+<div class="bg-surface-container-low p-2 border border-outline-variant/10 rounded flex flex-col justify-center">
+<span class="text-[9px] font-bold text-on-surface-variant uppercase tracking-tighter">Active Signals</span>
+<span class="text-lg font-bold mono text-tertiary-container">04 <span class="text-[10px] font-normal text-on-surface-variant ml-1">/ 12</span></span>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-6 h-[320px] widget-card">
+<div class="px-3 py-1 bg-surface-container-lowest border-b border-outline-variant/10 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] widget-handle text-on-surface-variant">drag_indicator</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">XLM/USDC Terminal</span>
+</div>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-[14px] text-primary-container">push_pin</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant">fullscreen</span>
+</div>
+</div>
+<div class="flex-1 relative bg-black/20">
+<img alt="Price Chart" class="w-full h-full object-cover opacity-30 grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQIEuJIzwBmAY5UmNhOBnkAcLX0tUI4UHELv7ixlfxZJwUObd9KsjPsLdCqk4EdZeJCqNc2qO6amBDCuum5eBp_dV62jZOZpnNT39W34SnTa-FOeNtJ0XeAcv3yCS6xLmgPvdRMzFsaaBh36p5rzaLh505GCbdOtXLIin4rt0F8i8PTOD8z5CBuzLRmXjkB3OfHdv_jA1_i5NyfDZP3BBF3uLNfoljKfJ1p4oLOtGZhyzC9eEvc59O-aMU-Mkug5dhNSUlgCAgjXA"/>
+<div class="absolute top-2 left-2 bg-surface-container-lowest/80 px-2 py-1 border border-outline-variant/20 rounded">
+<span class="mono text-[11px] font-bold">0.12482</span>
+<span class="mono text-[10px] text-emerald-400 ml-1">+2.4%</span>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-3 h-[320px] widget-card">
+<div class="px-3 py-1 bg-surface-container-lowest border-b border-outline-variant/10 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] widget-handle text-on-surface-variant">drag_indicator</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">AI Command</span>
+</div>
+<span class="material-symbols-outlined text-[14px] text-primary-container">push_pin</span>
+</div>
+<div class="p-3 flex-1 flex flex-col gap-3">
+<div class="flex justify-between items-center">
+<span class="text-[10px] uppercase text-on-surface-variant">Status</span>
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-bold text-emerald-400">AUTONOMOUS</span>
+<div class="w-6 h-3 bg-primary-container rounded-full relative"><div class="absolute right-0.5 top-0.5 w-2 h-2 bg-on-primary rounded-full"></div></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-2">
+<div class="bg-surface-container-high p-2 rounded">
+<div class="text-[9px] text-on-surface-variant uppercase">Latency</div>
+<div class="mono text-xs font-bold">14ms</div>
+</div>
+<div class="bg-surface-container-high p-2 rounded">
+<div class="text-[9px] text-on-surface-variant uppercase">Uptime</div>
+<div class="mono text-xs font-bold">94:12h</div>
+</div>
+</div>
+<div class="mt-auto border-t border-outline-variant/10 pt-3">
+<div class="text-[9px] text-on-surface-variant uppercase mb-2">Live Logs</div>
+<div class="mono text-[9px] space-y-1 opacity-80 overflow-hidden h-20">
+<div class="text-emerald-400">[14:32:01] Scan: Bullish cross detect</div>
+<div class="text-emerald-400">[14:32:05] Entry: Long XLM @ 0.1248</div>
+<div class="text-on-surface-variant">[14:32:10] Risk: SL adjusted to 0.1220</div>
+<div class="text-on-surface-variant">[14:32:15] Monitoring liquidity...</div>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-3 h-[320px] widget-card">
+<div class="px-3 py-1 bg-surface-container-lowest border-b border-outline-variant/10 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] widget-handle text-on-surface-variant">drag_indicator</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Risk Matrix</span>
+</div>
+<span class="material-symbols-outlined text-[14px] text-primary-container">push_pin</span>
+</div>
+<div class="p-4 space-y-4">
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-[10px] text-on-surface-variant uppercase">Max Lev.</span>
+<span class="text-[10px] mono font-bold">5.0x</span>
+</div>
+<div class="h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary-container" style="width: 50%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-[10px] text-on-surface-variant uppercase">Margin Usage</span>
+<span class="text-[10px] mono font-bold">18.4%</span>
+</div>
+<div class="h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-emerald-500" style="width: 18.4%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-[10px] text-on-surface-variant uppercase">Daily Drawdown</span>
+<span class="text-[10px] mono font-bold">0.42% / 2.5%</span>
+</div>
+<div class="h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-red-400" style="width: 15%"></div>
+</div>
+</div>
+<button class="w-full mt-4 py-2 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/10 rounded">
+                    Emergency Halt
+                </button>
+</div>
+</div>
+<div class="col-span-12 widget-card mt-1">
+<div class="px-3 py-1 bg-surface-container-lowest border-b border-outline-variant/10 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] widget-handle text-on-surface-variant">drag_indicator</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Transaction Ledger</span>
+</div>
+<div class="flex gap-4 items-center">
+<span class="text-[9px] text-on-surface-variant mono">AUTO-EXPORT: ON</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant cursor-pointer">settings_suggest</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-lowest/30 text-[9px] text-on-surface-variant uppercase font-bold tracking-widest">
+<th class="px-4 py-2">Time</th>
+<th class="px-4 py-2">Pair</th>
+<th class="px-4 py-2">Action</th>
+<th class="px-4 py-2 text-right">Price</th>
+<th class="px-4 py-2 text-right">Qty</th>
+<th class="px-4 py-2 text-right">PnL</th>
+<th class="px-4 py-2 text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="px-4 py-2 mono text-[10px]">14:22:45</td>
+<td class="px-4 py-2 text-[10px] font-bold">XLM/USDC</td>
+<td class="px-4 py-2"><span class="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-bold rounded uppercase">Buy</span></td>
+<td class="px-4 py-2 mono text-[10px] text-right">0.12421</td>
+<td class="px-4 py-2 mono text-[10px] text-right">45.0k</td>
+<td class="px-4 py-2 mono text-[10px] text-right text-emerald-400">+$142.2</td>
+<td class="px-4 py-2 text-right text-[9px] font-bold uppercase text-on-surface-variant">Filled</td>
+</tr>
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="px-4 py-2 mono text-[10px]">13:10:02</td>
+<td class="px-4 py-2 text-[10px] font-bold">XLM/USDC</td>
+<td class="px-4 py-2"><span class="px-1.5 py-0.5 bg-red-500/10 text-red-400 text-[9px] font-bold rounded uppercase">Sell</span></td>
+<td class="px-4 py-2 mono text-[10px] text-right">0.12350</td>
+<td class="px-4 py-2 mono text-[10px] text-right">12.5k</td>
+<td class="px-4 py-2 mono text-[10px] text-right text-red-400">-$24.1</td>
+<td class="px-4 py-2 text-right text-[9px] font-bold uppercase text-on-surface-variant">Filled</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 h-[200px] widget-card">
+<div class="px-3 py-1 bg-surface-container-lowest border-b border-outline-variant/10 flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] widget-handle text-on-surface-variant">drag_indicator</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Asset Allocation</span>
+</div>
+<div class="p-2 flex items-center gap-4">
+<div class="relative w-24 h-24">
+<svg class="w-full h-full transform -rotate-90">
+<circle cx="48" cy="48" fill="transparent" r="40" stroke="#1f2c34" stroke-width="8"></circle>
+<circle cx="48" cy="48" fill="transparent" r="40" stroke="#fcc010" stroke-dasharray="251" stroke-dashoffset="80" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-[14px] font-bold mono">62%</span>
+</div>
+</div>
+<div class="flex-1 text-[9px] mono space-y-1">
+<div class="flex justify-between"><span class="text-primary-container">XLM</span><span>62.4%</span></div>
+<div class="flex justify-between"><span class="text-tertiary-container">USDC</span><span>28.1%</span></div>
+<div class="flex justify-between"><span class="text-on-surface-variant">ETH</span><span>9.5%</span></div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-8 h-[200px] widget-card">
+<div class="px-3 py-1 bg-surface-container-lowest border-b border-outline-variant/10 flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] widget-handle text-on-surface-variant">drag_indicator</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Strategy Engine: ALPHA_V2</span>
+</div>
+<div class="p-3">
+<div class="flex items-center gap-4 h-full">
+<div class="flex-1 space-y-2">
+<div class="text-[9px] uppercase text-on-surface-variant">Efficiency Score</div>
+<div class="flex items-end gap-0.5 h-16">
+<div class="flex-1 bg-emerald-500/20 border-t border-emerald-500" style="height: 60%"></div>
+<div class="flex-1 bg-emerald-500/20 border-t border-emerald-500" style="height: 80%"></div>
+<div class="flex-1 bg-emerald-500/20 border-t border-emerald-500" style="height: 75%"></div>
+<div class="flex-1 bg-emerald-500/20 border-t border-emerald-500" style="height: 90%"></div>
+<div class="flex-1 bg-emerald-500/20 border-t border-emerald-500" style="height: 85%"></div>
+</div>
+</div>
+<div class="w-48 space-y-2 border-l border-outline-variant/10 pl-4">
+<div class="flex justify-between"><span class="text-[10px] text-on-surface-variant">Win Rate</span><span class="text-[10px] font-bold">68.2%</span></div>
+<div class="flex justify-between"><span class="text-[10px] text-on-surface-variant">Avg Trade</span><span class="text-[10px] font-bold">+$321</span></div>
+<div class="flex justify-between"><span class="text-[10px] text-on-surface-variant">Total Trades</span><span class="text-[10px] font-bold">1,244</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+</body></html>

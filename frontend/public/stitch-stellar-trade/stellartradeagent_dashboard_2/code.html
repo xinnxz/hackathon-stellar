@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>StellarTradeAgent | Strategic Overview Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #07151d;
+            color: #d6e4f0;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+            font-size: 20px;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #07151d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2c34;
+            border-radius: 2px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed-dim": "#c5c4de",
+                      "on-secondary": "#2e2f43",
+                      "on-tertiary": "#003640",
+                      "on-tertiary-container": "#005d6d",
+                      "surface": "#07151d",
+                      "on-secondary-fixed": "#191a2d",
+                      "tertiary-fixed-dim": "#0fd9fc",
+                      "surface-tint": "#f9bd09",
+                      "on-error-container": "#ffdad6",
+                      "on-background": "#d6e4f0",
+                      "secondary-fixed": "#e1e0fb",
+                      "on-surface": "#d6e4f0",
+                      "inverse-primary": "#785a00",
+                      "surface-container-low": "#101d26",
+                      "surface-variant": "#293640",
+                      "surface-dim": "#07151d",
+                      "outline": "#9c8f78",
+                      "on-primary-container": "#6c5000",
+                      "on-tertiary-fixed-variant": "#004e5c",
+                      "secondary": "#c5c4de",
+                      "on-secondary-fixed-variant": "#44455a",
+                      "inverse-on-surface": "#25323b",
+                      "surface-bright": "#2e3b44",
+                      "background": "#07151d",
+                      "on-primary": "#3f2e00",
+                      "surface-container": "#14212a",
+                      "error": "#ffb4ab",
+                      "on-secondary-container": "#b7b6d0",
+                      "surface-container-highest": "#293640",
+                      "surface-container-lowest": "#031018",
+                      "on-primary-fixed": "#251a00",
+                      "on-primary-fixed-variant": "#5b4300",
+                      "error-container": "#93000a",
+                      "primary-fixed": "#ffdf9c",
+                      "tertiary": "#b6efff",
+                      "primary-container": "#fcc010",
+                      "primary-fixed-dim": "#f9bd09",
+                      "outline-variant": "#4f4632",
+                      "primary": "#ffe2a8",
+                      "surface-container-high": "#1f2c34",
+                      "inverse-surface": "#d6e4f0",
+                      "secondary-container": "#47475d",
+                      "tertiary-fixed": "#abedff",
+                      "on-surface-variant": "#d3c5ac",
+                      "tertiary-container": "#1cdcff",
+                      "on-tertiary-fixed": "#001f26",
+                      "on-error": "#690005"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              }
+            },
+          }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden">
+<header class="flex justify-between items-center w-full px-6 h-16 bg-[#07151d] border-b border-outline-variant/10 fixed top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tight text-[#fcc010]">StellarTradeAgent</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-[#fcc010] border-b-2 border-[#fcc010] pb-1 font-bold text-sm tracking-wide" href="#">Executive Hub</a>
+<a class="text-[#d3c5ac] font-medium text-sm tracking-wide hover:bg-[#1f2c34] transition-colors duration-150 px-2 rounded" href="#">Allocation</a>
+<a class="text-[#d3c5ac] font-medium text-sm tracking-wide hover:bg-[#1f2c34] transition-colors duration-150 px-2 rounded" href="#">Insights</a>
+<a class="text-[#d3c5ac] font-medium text-sm tracking-wide hover:bg-[#1f2c34] transition-colors duration-150 px-2 rounded" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant/20 gap-2">
+<span class="material-symbols-outlined text-primary-container" data-icon="shield">shield</span>
+<span class="mono text-xs font-medium">Institutional Custody Active</span>
+</div>
+<button class="bg-[#fcc010] text-[#3f2e00] px-4 py-2 rounded-lg font-bold text-sm hover:brightness-110 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="account_balance">account_balance</span>
+            Manage Funds
+        </button>
+</div>
+</header>
+<aside class="flex flex-col fixed left-0 top-16 bottom-0 w-64 z-40 bg-[#101d26] border-r border-outline-variant/10">
+<div class="p-6">
+<div class="mb-8">
+<div class="text-[11px] font-black tracking-[0.1em] text-on-surface-variant uppercase mb-4">Strategic Console</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-[#fcc010] font-bold border-r-2 border-[#fcc010] bg-surface-container-high/40" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard_customize">dashboard_customize</span>
+<span class="text-xs tracking-widest uppercase">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#d3c5ac] opacity-70 hover:bg-[#14212a] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span class="text-xs tracking-widest uppercase">Performance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#d3c5ac] opacity-70 hover:bg-[#14212a] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+<span class="text-xs tracking-widest uppercase">AI Logic</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#d3c5ac] opacity-70 hover:bg-[#14212a] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="text-xs tracking-widest uppercase">Governance</span>
+</a>
+</nav>
+</div>
+</div>
+<div class="mt-auto p-6">
+<div class="p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10 mb-6">
+<div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">System Health</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+<span class="text-xs font-medium text-emerald-400">All Nodes Nominal</span>
+</div>
+</div>
+<button class="w-full bg-[#fcc010] text-[#3f2e00] py-3 rounded-lg font-bold text-xs tracking-widest uppercase hover:brightness-110 transition-all">
+            Override Control
+        </button>
+</div>
+</aside>
+<main class="ml-64 mt-16 p-6 h-[calc(100vh-64px)] overflow-y-auto bg-surface">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+<div class="bg-surface-container-low p-5 rounded-xl border-l-4 border-primary-container">
+<div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Net Asset Value</div>
+<div class="text-3xl font-bold mono text-on-surface">$2,842,503.22</div>
+<div class="text-[10px] mono text-emerald-400 mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="trending_up">trending_up</span>
+                +12.4% THIS QUARTER
+            </div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl">
+<div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Projected Annual Yield</div>
+<div class="text-3xl font-bold mono text-tertiary">22.4%</div>
+<div class="text-[10px] mono text-on-surface-variant mt-1">ALGORITHMIC ALPHA</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl">
+<div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Risk Exposure Index</div>
+<div class="text-3xl font-bold mono text-on-surface">Low</div>
+<div class="flex gap-1 mt-2">
+<div class="h-1 flex-1 bg-emerald-500 rounded-full"></div>
+<div class="h-1 flex-1 bg-emerald-500 rounded-full"></div>
+<div class="h-1 flex-1 bg-surface-variant rounded-full"></div>
+<div class="h-1 flex-1 bg-surface-variant rounded-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl">
+<div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">AI Efficiency</div>
+<div class="text-3xl font-bold mono text-primary-container">98.2%</div>
+<div class="text-[10px] mono text-on-surface-variant mt-1">Slippage: 0.02%</div>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-6 mb-6">
+<div class="col-span-12 lg:col-span-8 bg-surface-container p-6 rounded-xl border border-outline-variant/10">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h2 class="text-xl font-bold tracking-tight text-on-surface">Portfolio Multi-Asset Performance</h2>
+<p class="text-xs text-on-surface-variant mt-1 uppercase tracking-wider">Consolidated Strategic View (Monthly Aggregated)</p>
+</div>
+<div class="flex bg-surface-container-lowest p-1 rounded-lg border border-outline-variant/10">
+<button class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-on-surface">1M</button>
+<button class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-surface-variant text-primary-container rounded">6M</button>
+<button class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-on-surface">1Y</button>
+<button class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-on-surface">ALL</button>
+</div>
+</div>
+<div class="h-[380px] w-full relative">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="grad-gold" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#fcc010" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#fcc010" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="20" y2="20"></line>
+<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="40" y2="40"></line>
+<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="60" y2="60"></line>
+<line stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.2" x1="0" x2="100" y1="80" y2="80"></line>
+<path d="M 0 80 Q 15 75, 25 60 T 45 55 T 65 40 T 85 30 L 100 25 L 100 100 L 0 100 Z" fill="url(#grad-gold)"></path>
+<path d="M 0 80 Q 15 75, 25 60 T 45 55 T 65 40 T 85 30 L 100 25" fill="none" stroke="#fcc010" stroke-width="2"></path>
+<path d="M 0 85 Q 20 82, 35 70 T 60 75 T 80 65 L 100 60" fill="none" stroke="#d3c5ac" stroke-dasharray="2" stroke-opacity="0.3" stroke-width="1"></path>
+</svg>
+<div class="absolute top-0 right-0 flex flex-col gap-2 p-4 bg-surface-container-lowest/80 backdrop-blur rounded border border-outline-variant/10">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary-container"></div>
+<span class="text-[10px] font-bold uppercase text-on-surface-variant">Active Alpha Strategy</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-[#d3c5ac] opacity-50"></div>
+<span class="text-[10px] font-bold uppercase text-on-surface-variant">Benchmark Index</span>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<div class="bg-[#14212a] p-6 rounded-xl border border-primary-container/30 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-primary-container/20 text-6xl" data-icon="psychology">psychology</span>
+</div>
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-6">
+<div>
+<span class="text-[10px] font-bold text-primary-container uppercase tracking-widest mb-1 block">AI Core Status</span>
+<h3 class="text-2xl font-bold text-on-surface uppercase">Optimizing</h3>
+</div>
+<button class="w-12 h-6 bg-primary-container rounded-full relative transition-colors">
+<div class="absolute right-1 top-1 w-4 h-4 bg-on-primary rounded-full"></div>
+</button>
+</div>
+<div class="space-y-4 mb-6">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
+<span class="text-xs text-on-surface-variant uppercase tracking-wider">Strategy Variant</span>
+<span class="text-xs font-bold text-on-surface uppercase">Aggressive Yield</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
+<span class="text-xs text-on-surface-variant uppercase tracking-wider">Sentiment Score</span>
+<span class="text-xs font-bold text-emerald-400 uppercase">Bullish (0.82)</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
+<span class="text-xs text-on-surface-variant uppercase tracking-wider">Computation Load</span>
+<span class="text-xs font-bold mono">12.4 TFLOPS</span>
+</div>
+</div>
+<button class="w-full bg-surface-container-high text-on-surface py-3 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-surface-variant transition-colors border border-outline-variant/20">
+                        Detailed Logic Drill-down
+                    </button>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-xl border border-outline-variant/10">
+<div class="flex justify-between items-center mb-6">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Global Risk Distribution</span>
+<span class="text-[10px] text-emerald-400 font-bold uppercase">Within Params</span>
+</div>
+<div class="space-y-5">
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-[11px] text-on-surface-variant uppercase tracking-wider">Sector Concentration</span>
+<span class="text-xs font-bold mono">Low (14%)</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container" style="width: 14%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-[11px] text-on-surface-variant uppercase tracking-wider">Leverage Utilization</span>
+<span class="text-xs font-bold mono">1.2x (Global Avg)</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container" style="width: 24%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="bg-surface-container p-6 rounded-xl border border-outline-variant/10">
+<h3 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-6">Profitability Drivers</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="rocket_launch">rocket_launch</span>
+</div>
+<span class="text-xs font-medium">Momentum Arbitrage</span>
+</div>
+<span class="mono text-xs text-emerald-400">+$124.2k</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-tertiary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary-container text-sm" data-icon="waves">waves</span>
+</div>
+<span class="text-xs font-medium">Mean Reversion Logic</span>
+</div>
+<span class="mono text-xs text-emerald-400">+$82.5k</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-red-400/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-red-400 text-sm" data-icon="warning">warning</span>
+</div>
+<span class="text-xs font-medium">Tail Risk Hedging</span>
+</div>
+<span class="mono text-xs text-red-400">-$14.2k</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-xl border border-outline-variant/10">
+<h3 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-6">Execution Quality</h3>
+<div class="space-y-4">
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Average Entry Slippage</span>
+<span class="mono text-emerald-400">-0.002%</span>
+</div>
+<div class="h-1 w-full bg-surface-container-lowest rounded-full">
+<div class="h-full bg-emerald-500" style="width: 95%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Fill Rate Accuracy</span>
+<span class="mono text-on-surface">99.8%</span>
+</div>
+<div class="h-1 w-full bg-surface-container-lowest rounded-full">
+<div class="h-full bg-primary-container" style="width: 99%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">API Response Latency</span>
+<span class="mono text-on-surface">14.2ms</span>
+</div>
+<div class="h-1 w-full bg-surface-container-lowest rounded-full">
+<div class="h-full bg-tertiary-container" style="width: 90%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-xl border border-outline-variant/10 flex flex-col justify-between">
+<h3 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">Strategic Alert Center</h3>
+<div class="space-y-3 flex-grow">
+<div class="p-3 bg-surface-container-low rounded border border-outline-variant/10">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="info">info</span>
+<div>
+<div class="text-[10px] font-bold uppercase tracking-wider">AI Optimization</div>
+<div class="text-[11px] text-on-surface-variant">Rebalancing XLM weights for Q3 alpha target.</div>
+</div>
+</div>
+</div>
+<div class="p-3 bg-surface-container-low rounded border border-outline-variant/10">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-emerald-400 text-sm" data-icon="check_circle">check_circle</span>
+<div>
+<div class="text-[10px] font-bold uppercase tracking-wider">Market Milestone</div>
+<div class="text-[11px] text-on-surface-variant">Portfolio reached ATH of $2.84M USD.</div>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full mt-4 text-[10px] font-bold uppercase tracking-widest text-primary-container flex items-center justify-center gap-2 hover:underline">
+                View All Activity <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+
+</body></html>

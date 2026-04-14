@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LandingPage from './landing/LandingPage'
-import Dashboard from './Dashboard'
+import NewDashboard from './NewDashboard'
 import './index.css'
 
 function App() {
@@ -9,7 +9,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/app" element={<Dashboard />} />
+        <Route path="/app" element={<NewDashboard />} />
       </Routes>
     </BrowserRouter>
   )
