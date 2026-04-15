@@ -54,9 +54,9 @@ app.use(cors());
 app.use(express.json());
 
 /**
- * GET / — Server info
+ * GET /api — Server info
  */
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.json({
     name: 'StellarTradeAgent',
     version: '1.0.0',
