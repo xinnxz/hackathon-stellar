@@ -184,7 +184,7 @@ app.get('/payments', (_, res) => {
 });
 
 // Start
-app.listen(PORT, () => {
+app.listen(PORT, '127.0.0.1', () => {
   console.log('');
   console.log('🌐 ════════════════════════════════════════');
   console.log('   x402 Market Intelligence Server');
