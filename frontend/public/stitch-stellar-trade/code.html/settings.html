@@ -212,7 +212,7 @@ No active trades
               <h2 class="text-2xl font-bold text-on-surface">System Configuration</h2>
               <p class="text-on-surface-variant text-sm mt-1 uppercase tracking-widest">Agent Logic & Connectivity overrides</p>
           </div>
-          <button class="bg-[#fcc010] text-[#3f2e00] px-6 py-2.5 rounded-lg font-black text-xs hover:brightness-110 tracking-[0.1em] uppercase shadow">
+          <button id="btn-save-settings" class="bg-[#fcc010] text-[#3f2e00] px-6 py-2.5 rounded-lg font-black text-xs hover:brightness-110 tracking-[0.1em] uppercase shadow transition-all">
               Save Changes
           </button>
       </div>
@@ -226,19 +226,19 @@ No active trades
               <div class="grid grid-cols-2 gap-8">
                   <div>
                       <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Max Position Risk</label>
-                      <input type="text" value="30%" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-3 text-sm mono text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" />
+                      <input id="in-max-position" type="text" value="30%" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-3 text-sm mono text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" />
                   </div>
                   <div>
                       <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Stop Loss Trigger</label>
-                      <input type="text" value="-5.0%" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-3 text-sm mono text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" />
+                      <input id="in-stop-loss" type="text" value="-5.0%" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-3 text-sm mono text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" />
                   </div>
                   <div>
                       <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Take Profit Target</label>
-                      <input type="text" value="+8.0%" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-3 text-sm mono text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" />
+                      <input id="in-take-profit" type="text" value="+8.0%" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-3 text-sm mono text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" />
                   </div>
                   <div>
                       <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Cooldown Period</label>
-                      <input type="text" value="60 seconds" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-3 text-sm mono text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" />
+                      <input id="in-cooldown" type="text" value="60 seconds" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-3 text-sm mono text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" />
                   </div>
               </div>
           </div>

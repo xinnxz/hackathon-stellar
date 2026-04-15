@@ -314,6 +314,38 @@ app.post('/api/openclaw-webhook', (req, res) => {
 });
 
 // ═══════════════════════════════════
+// Settings API
+// ═══════════════════════════════════
+app.get('/api/settings', (req, res) => {
+  try {
+    const settingsPath = path.resolve(__dirname, 'settings.json');
+    if (fs.existsSync(settingsPath)) {
+      const config = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+      res.json(config);
+    } else {
+      res.json({
+        maxPosition: '30%',
+        stopLoss: '-5.0%',
+        takeProfit: '+8.0%',
+        cooldown: '60 seconds'
+      });
+    }
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to read settings' });
+  }
+});
+
+app.post('/api/settings', (req, res) => {
+  try {
+    const settingsPath = path.resolve(__dirname, 'settings.json');
+    fs.writeFileSync(settingsPath, JSON.stringify(req.body, null, 2));
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to save settings' });
+  }
+});
+
+// ═══════════════════════════════════
 // Start Server
 // ═══════════════════════════════════
 // Serve React Frontend

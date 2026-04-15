@@ -26,7 +26,16 @@ const el = {
   pnl: document.getElementById('el-24h-pnl'),
   winRate: document.getElementById('el-win-rate'),
   price: document.getElementById('el-current-price'),
-  ledger: document.getElementById('el-ledger-tbody')
+  ledger: document.getElementById('el-ledger-tbody'),
+  tableXlmBalance: document.getElementById('el-table-xlm-balance'),
+  tableUsdcBalance: document.getElementById('el-table-usdc-balance'),
+  
+  // Settings
+  inMaxPosition: document.getElementById('in-max-position'),
+  inStopLoss: document.getElementById('in-stop-loss'),
+  inTakeProfit: document.getElementById('in-take-profit'),
+  inCooldown: document.getElementById('in-cooldown'),
+  btnSaveSettings: document.getElementById('btn-save-settings')
 };
 
 // ══════════════════════════════════════
@@ -61,6 +70,7 @@ async function init() {
   console.log('[StellarAgent] Starting init...');
   await fetchSkillsStatus();
   await fetchStatus();
+  await fetchSettings();
   setupSSE();
   setupInteractions();
   startHeartbeat();
@@ -225,6 +235,10 @@ function updateTotalBalance(xlm, usdc) {
   if (el.balanceDetail) {
     el.balanceDetail.innerText = `${xlm.toFixed(2)} XLM · ${usdc.toFixed(2)} USDC`;
   }
+  
+  // Update Portfolio Holdings list if present
+  if (el.tableXlmBalance) el.tableXlmBalance.innerText = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(xlm);
+  if (el.tableUsdcBalance) el.tableUsdcBalance.innerText = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(usdc);
 }
 
 function updateAssetAllocation(xlm, usdc, price) {
@@ -581,6 +595,10 @@ function setupInteractions() {
   if (el.btnExecute) el.btnExecute.addEventListener('click', toggleTrading);
   if (el.btnToggle) el.btnToggle.addEventListener('click', toggleTrading);
   
+  if (el.btnSaveSettings) {
+    el.btnSaveSettings.addEventListener('click', saveSettings);
+  }
+  
   if (el.btnWalletCopy) {
     el.btnWalletCopy.addEventListener('click', () => {
       if (currentWalletAddress) {
@@ -763,3 +781,51 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   init();
 });
+
+// ══════════════════════════════════════
+// Settings Management
+// ══════════════════════════════════════
+async function fetchSettings() {
+  if (!el.btnSaveSettings) return; // Only process on settings page
+  try {
+    const res = await fetch(`${API_URL}/settings`);
+    const data = await res.json();
+    if (data && el.inMaxPosition) {
+      el.inMaxPosition.value = data.maxPosition || '30%';
+      el.inStopLoss.value = data.stopLoss || '-5.0%';
+      el.inTakeProfit.value = data.takeProfit || '+8.0%';
+      el.inCooldown.value = data.cooldown || '60 seconds';
+    }
+  } catch (e) {
+    console.error('[StellarAgent] Error fetching settings:', e);
+  }
+}
+
+async function saveSettings() {
+  if (!el.btnSaveSettings) return;
+  const originalText = el.btnSaveSettings.innerText;
+  el.btnSaveSettings.innerText = 'SAVING...';
+  
+  try {
+    const payload = {
+      maxPosition: el.inMaxPosition.value,
+      stopLoss: el.inStopLoss.value,
+      takeProfit: el.inTakeProfit.value,
+      cooldown: el.inCooldown.value
+    };
+    
+    await fetch(`${API_URL}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    showToast('Settings successfully saved to backend!');
+  } catch (e) {
+    showToast('Failed to save settings.');
+  } finally {
+    setTimeout(() => {
+      if (el.btnSaveSettings) el.btnSaveSettings.innerText = originalText;
+    }, 1000);
+  }
+}
