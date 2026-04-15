@@ -16,7 +16,7 @@
     "demo": "concurrently --names MPP,X402,API,UI \"npm run mpp\" \"npm run x402\" \"npm run server\" \"npm run dashboard\"",
     "auto-demo": "node scripts/auto-demo.js",
     "install:all": "npm install && cd server && npm install && cd ../services/market-data && npm install && cd ../x402-intel-server && npm install && cd ../../frontend && npm install",
-    "postinstall": "npm run install:all && cd frontend && npm run build",
+    "build": "cd server && npm install && cd ../services/market-data && npm install && cd ../x402-intel-server && npm install && cd ../../frontend && npm install && npm run build",
     "start": "concurrently \"npm run mpp\" \"npm run x402\" \"node server/index.js\""
   },
   "keywords": [
