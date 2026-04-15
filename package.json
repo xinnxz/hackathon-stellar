@@ -15,10 +15,9 @@
     "dev": "concurrently \"npm run mpp\" \"npm run x402\" \"npm run server\" \"npm run dashboard\"",
     "demo": "concurrently --names MPP,X402,API,UI \"npm run mpp\" \"npm run x402\" \"npm run server\" \"npm run dashboard\"",
     "auto-demo": "node scripts/auto-demo.js",
-    "install:all": "npm install && cd server && npm install && cd ../services/market-data && npm install && cd ../x402-intel-server && npm install && cd ../../frontend && npm install"
-  },
-  "devDependencies": {
-    "concurrently": "^9.1.2"
+    "install:all": "npm install && cd server && npm install && cd ../services/market-data && npm install && cd ../x402-intel-server && npm install && cd ../../frontend && npm install",
+    "postinstall": "npm run install:all && cd frontend && npm run build",
+    "start": "concurrently \"npm run mpp\" \"npm run x402\" \"node server/index.js\""
   },
   "keywords": [
     "stellar",
@@ -35,6 +34,7 @@
     "@x402/core": "^2.10.0",
     "@x402/fetch": "^2.10.0",
     "@x402/stellar": "^2.10.0",
+    "concurrently": "^9.1.2",
     "mppx": "^0.4.12"
   }
 }

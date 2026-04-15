@@ -316,18 +316,25 @@ app.post('/api/openclaw-webhook', (req, res) => {
 // ═══════════════════════════════════
 // Start Server
 // ═══════════════════════════════════
-app.listen(PORT, () => {
+// Serve React Frontend
+app.use(express.static(path.resolve(__dirname, '../frontend/dist')));
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
+});
+
+const FINAL_PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
+app.listen(FINAL_PORT, () => {
   console.log('');
   console.log('========================================');
   console.log('   StellarTradeAgent Server');
   console.log('========================================');
-  console.log(`   Port:       ${PORT}`);
+  console.log(`   Port:       ${FINAL_PORT}`);
   console.log(`   MPP Server: ${MPP_URL}`);
   console.log(`   Horizon:    ${HORIZON_URL}`);
   console.log(`   Budget:     ${process.env.AGENT_BUDGET_USDC || '1.00'} USDC`);
   console.log(`   Agent:      ${agent ? 'READY' : 'NO WALLET'}`);
   console.log('========================================');
-  console.log('   API:    http://localhost:' + PORT);
-  console.log('   SSE:    http://localhost:' + PORT + '/api/events');
+  console.log('   API:    http://localhost:' + FINAL_PORT);
+  console.log('   SSE:    http://localhost:' + FINAL_PORT + '/api/events');
   console.log('========================================\n');
 });

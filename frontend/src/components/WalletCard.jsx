@@ -11,7 +11,7 @@
  */
 import { useState, useEffect } from 'react'
 
-const API_URL = 'http://localhost:3000'
+const API_URL = import.meta.env.DEV ? 'http://localhost:3000' : ''
 
 export default function WalletCard({ balances = {} }) {
   const { xlm = 0, usdc = 0, publicKey = '' } = balances

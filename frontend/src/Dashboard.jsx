@@ -11,7 +11,7 @@ import TradingChart from './components/TradingChart'
 import ReasoningPanel from './components/ReasoningPanel'
 import TxVerifier from './components/TxVerifier'
 
-const API_URL = 'http://localhost:3000'
+const API_URL = import.meta.env.DEV ? 'http://localhost:3000' : ''
 
 function Dashboard() {
   // ═══ STATE ═══
