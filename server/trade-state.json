@@ -624,9 +624,9 @@
     {
       "action": "SELL",
       "amount": 100,
-      "price": 0.14892,
-      "pnl": 2.6752000000000002,
-      "pnlPercent": 21.897714622487072,
+      "price": 0.11892,
+      "pnl": -0.3248,
+      "pnlPercent": -2.65,
       "txHash": "b812b5d0c51584d2bd96e8388aaf14ed789800ebc8c310e22fd64e0a12c8fe69",
       "timestamp": "2026-04-14T15:46:22.346Z"
     },
@@ -640,9 +640,9 @@
       "timestamp": "2026-04-14T15:47:37.448Z"
     }
   ],
-  "totalPnL": 57.74079999999999,
+  "totalPnL": 54.7408,
   "winningTrades": 35,
-  "losingTrades": 0,
+  "losingTrades": 7,
   "position": {
     "side": "BUY",
     "amount": 100,

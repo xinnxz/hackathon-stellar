@@ -21,13 +21,39 @@
  */
 
 // ═══ Configuration ═══
-const BASE_PRICE = 0.13;          // Starting price
+let BASE_PRICE = 0.13;          // Starting price
+let MIN_PRICE = 0.09;           // Hard floor
+let MAX_PRICE = 0.19;           // Hard ceiling
 const MAX_AMPLITUDE = 0.04;       // Max swing dari base
-const MIN_PRICE = 0.09;           // Hard floor
-const MAX_PRICE = 0.19;           // Hard ceiling
 
 // ═══ State ═══
 let currentPrice = BASE_PRICE;
+
+import https from 'https';
+
+function initRealPrice() {
+  https.get('https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=usd', (res) => {
+    let data = '';
+    res.on('data', chunk => data += chunk);
+    res.on('end', () => {
+      try {
+        const json = JSON.parse(data);
+        if (json && json.stellar && json.stellar.usd) {
+          const realPrice = json.stellar.usd;
+          BASE_PRICE = realPrice;
+          MIN_PRICE = realPrice * 0.7;
+          MAX_PRICE = realPrice * 1.3;
+          currentPrice = realPrice;
+          console.log(`\n[Market Engine] 📡 Synced mock base with real-time XLM price: $${realPrice}`);
+        }
+      } catch (e) {}
+    });
+  }).on('error', () => {
+    console.log('\n[Market Engine] ⚠️ Failed to fetch real XLM price, using fallback $0.13');
+  });
+}
+
+initRealPrice();
 let trend = 0;           // Current momentum (-1 to +1)
 let volatility = 0.002;  // Current volatility
 let phase = 'ACCUMULATION';
